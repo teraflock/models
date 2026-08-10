@@ -1,0 +1,80 @@
+# HiveGrid fingerprint challenge set — schema/fingerprint-prompts.schema.json
+# Prompts are PUBLIC by design; expected outputs are private (control-plane repo),
+# keyed by (model_sha, quant, runtime_build_id). See fp-gen-v1.yaml header.
+id: fp-gen-v2
+kind: generation
+description: >-
+  Discrimination set for mid/large generative models. Same categories as
+  fp-gen-v1 with harder arithmetic (bigger models get chains they should
+  actually get right, sharpening wrong-model detection) and longer
+  format-following constraints.
+defaults:
+  temperature: 0
+  top_p: 1.0
+  seed: 1337
+  max_tokens: 48
+prompts:
+  - id: arith-chain-01
+    category: arithmetic-chain
+    prompt: >-
+      Start with 2024. Multiply by 17, subtract 4444, divide by 6, add the
+      digit sum of the intermediate result. Show nothing except the final
+      number.
+    max_tokens: 16
+  - id: arith-chain-02
+    category: arithmetic-chain
+    prompt: >-
+      Compute 31415 * 271, then give the remainder of that product modulo
+      9973. Reply with only the two numbers separated by a slash.
+    max_tokens: 24
+  - id: arith-chain-03
+    category: arithmetic-chain
+    prompt: >-
+      List the first five prime numbers greater than 10000, comma-separated,
+      nothing else.
+    max_tokens: 32
+  - id: rare-token-01
+    category: rare-token
+    prompt: >-
+      Continue this sequence of IATA airport codes for the cities Ulaanbaatar,
+      Nouakchott, Paramaribo with the code for Thimphu. Reply with all four
+      codes comma-separated.
+    max_tokens: 24
+  - id: rare-token-02
+    category: rare-token
+    prompt: >-
+      Write the ISO 4217 currency codes for Kyrgyzstan, Eswatini, and Vanuatu,
+      comma-separated, nothing else.
+    max_tokens: 16
+  - id: rare-token-03
+    category: rare-token
+    prompt: >-
+      Complete the taxonomic species name that begins "Parastratiosphecomyia".
+      Reply with the full binomial only.
+    max_tokens: 20
+  - id: format-01
+    category: format-following
+    prompt: >-
+      Output a YAML document with a top-level key "grid" containing a list of
+      exactly three maps, each with keys "r" and "c" set to the row and column
+      of the cells (1,1), (2,3), (3,2) in that order. No comments, no code
+      fences.
+    max_tokens: 48
+  - id: format-02
+    category: format-following
+    prompt: >-
+      Encode the ASCII string "Hive" as hexadecimal byte values, uppercase,
+      space-separated, output only that.
+    max_tokens: 16
+  - id: format-03
+    category: format-following
+    prompt: >-
+      Produce a CSV header line exactly: id,tok_s,quant then one data row for
+      id 7, tok_s 41.5, quant Q4_K_M. Output only the two lines.
+    max_tokens: 24
+  - id: mixed-01
+    category: format-following
+    prompt: >-
+      Spell "HIVEGRID" backwards, then insert a hyphen between every pair of
+      letters. Output only the result.
+    max_tokens: 16

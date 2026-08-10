@@ -1,0 +1,42 @@
+# HiveGrid fingerprint challenge set — schema/fingerprint-prompts.schema.json
+# Embedding probes: the coordinator embeds each input on the node under test and
+# compares against private reference vectors (cosine similarity threshold per
+# (model_sha, quant, runtime_build_id) tuple). Inputs are public; reference
+# vectors are private (control-plane repo).
+id: fp-embed-v1
+kind: embedding
+description: >-
+  Probe set for embedding models. Inputs chosen to be tokenizer-sensitive
+  (rare words, code, multilingual, numerics) so a substituted model or quant
+  produces measurably different vectors.
+prompts:
+  - id: probe-01
+    category: embedding-probe
+    input: "The sesquipedalian ombudsman prognosticated a defenestration."
+  - id: probe-02
+    category: embedding-probe
+    input: "SELECT quant, COUNT(*) FROM node_models WHERE state = 'ready' GROUP BY 1;"
+  - id: probe-03
+    category: embedding-probe
+    input: "Die Donaudampfschifffahrtsgesellschaft verkaufte ihre letzten Anteile."
+  - id: probe-04
+    category: embedding-probe
+    input: "483,920.17 tokens/sec at 0.0031 USD per Mtok equals what daily payout?"
+  - id: probe-05
+    category: embedding-probe
+    input: "fn dispatch(&mut self, req: EphemeralRequest) -> Result<TokenStream, YieldError>"
+  - id: probe-06
+    category: embedding-probe
+    input: "量子コンピュータは誤り訂正が実用化の鍵である。"
+  - id: probe-07
+    category: embedding-probe
+    input: "A bee's waggle dance encodes both azimuth relative to the sun and distance."
+  - id: probe-08
+    category: embedding-probe
+    input: "xK9#mQ2$vL7@ 7f3a9c1e entropy-dense non-linguistic filler string"
+  - id: probe-09
+    category: embedding-probe
+    input: "Erstwhile phlebotomists eschewed borborygmus during the eisteddfod."
+  - id: probe-10
+    category: embedding-probe
+    input: "GGUF Q4_K_M quantization stores super-blocks of 8 blocks, each with 32 weights."

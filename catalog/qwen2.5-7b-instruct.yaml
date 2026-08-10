@@ -1,0 +1,39 @@
+# HiveGrid model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (bartowski/Qwen2.5-7B-Instruct-GGUF), 2026-07-06.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+id: qwen2.5-7b-instruct
+family: qwen2.5
+params_b: 7.62
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/Qwen/Qwen2.5-7B-Instruct/blob/main/LICENSE
+payout_class: small
+context_length: 32768
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.055 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.10
+source_repo: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+    sha256: 65b8fcd92af6b4fefa935c625d1ac27ea29dcb6ee14589c55a8f115ceaaa1423
+    size_bytes: 4683074240
+    min_vram_mb: 5600
+    min_ram_mb: 8192
+    tok_s_estimates: # estimates
+      m2-max: { min: 42, max: 68 }
+      rtx-4090: { min: 95, max: 145 }
+      rtx-3060: { min: 42, max: 65 }
+      cpu-avx2: { min: 5, max: 12 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q8_0.gguf
+    sha256: 9c6a6e61664446321d9c0dd7ee28a0d03914277609e21bc0e1fce4abe780ce1b
+    size_bytes: 8098525888
+    min_vram_mb: 9400
+    min_ram_mb: 12288
+    tok_s_estimates: # estimates
+      m2-max: { min: 27, max: 43 }
+      rtx-4090: { min: 62, max: 95 }
+      rtx-3060: { min: 24, max: 38 }
+      cpu-avx2: { min: 3, max: 7 }

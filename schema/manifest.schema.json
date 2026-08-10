@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hivegrid.dev/schema/manifest.schema.json",
+  "title": "HiveGrid model catalog manifest",
+  "description": "One manifest per model in catalog/<id>.yaml. Fields align with hive.types.v1.ModelSpec (proto repo) plus catalog-only metadata per SPEC §4.6 and §7. Per-quant sha256/size_bytes come from the upstream artifact host and are verified by hived before serving; tok/s envelopes are honest rough estimates used by the trust engine's timing sanity checks, not benchmarks.",
+  "type": "object",
+  "required": [
+    "id",
+    "family",
+    "params_b",
+    "license",
+    "payout_class",
+    "context_length",
+    "embeddings",
+    "fingerprint_set_id",
+    "base_payout_rate",
+    "customer_price_per_mtok",
+    "source_repo",
+    "quants"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$",
+      "description": "Catalog model id, e.g. llama-3.1-8b-instruct. Must equal the manifest filename (without .yaml). ModelSpec.id is derived as <id>-<quant-lowercased>."
+    },
+    "family": {
+      "type": "string",
+      "description": "Model family, e.g. llama-3.1, qwen2.5."
+    },
+    "params_b": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Parameter count in billions."
+    },
+    "license": {
+      "type": "object",
+      "required": ["name", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "notes": {
+          "type": "string",
+          "description": "Caveats, e.g. Llama Community License commercial-serving terms (SPEC §13.2)."
+        }
+      }
+    },
+    "payout_class": {
+      "enum": ["nano", "small", "mid", "large"],
+      "description": "Pricing class per SPEC §7. Embedding models carry a class for hardware-tiering purposes but are priced separately (embeddings: true overrides the class price table)."
+    },
+    "context_length": {
+      "type": "integer",
+      "minimum": 512,
+      "description": "Maximum context window in tokens as served (may be lower than the architecture max)."
+    },
+    "embeddings": {
+      "type": "boolean",
+      "description": "True if served via /v1/embeddings instead of chat/completions."
+    },
+    "fingerprint_set_id": {
+      "type": "string",
+      "description": "Id of a challenge prompt set in fingerprints/prompts/<set-id>.yaml. Expected outputs live in the private control-plane repo, keyed by (model_sha, quant, runtime_build_id)."
+    },
+    "base_payout_rate": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Node payout in USD per million tokens (prompt+completion), before multipliers. ~55% of customer price per SPEC §7."
+    },
+    "customer_price_per_mtok": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Customer price in USD per million tokens (prompt+completion)."
+    },
+    "source_repo": {
+      "type": "string",
+      "format": "uri",
+      "description": "Upstream artifact repository the quant files are pulled from (HF-proxied by the registry CDN in production)."
+    },
+    "quants": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/quant" }
+    }
+  },
+  "$defs": {
+    "quant": {
+      "type": "object",
+      "required": [
+        "quant",
+        "artifact_url",
+        "sha256",
+        "size_bytes",
+        "min_vram_mb",
+        "min_ram_mb",
+        "tok_s_estimates"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "quant": {
+          "type": "string",
+          "pattern": "^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|F16|BF16|F32)$",
+          "description": "llama.cpp quantization name, canonical upper-case form."
+        },
+        "artifact_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "\\.gguf$",
+          "description": "Direct download URL of the GGUF artifact (single-file quants only in v1)."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{64}|TODO-verify)$",
+          "description": "SHA-256 of the artifact. hived refuses to serve on mismatch (SPEC §6). 'TODO-verify' is permitted only while a manifest is in draft; CI policy may reject it on release branches."
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "min_vram_mb": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum dedicated VRAM (or unified memory budget) to load the artifact plus a working KV cache."
+        },
+        "min_ram_mb": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum system RAM for CPU/unified-memory serving."
+        },
+        "tok_s_estimates": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "description": "ESTIMATED single-stream decode tokens/sec envelopes per hardware class (embedding models: batched embedding tokens/sec). Used for timing sanity checks (SPEC §2.2). Omit a class if the quant cannot reasonably run on it.",
+          "properties": {
+            "m2-max": { "$ref": "#/$defs/envelope" },
+            "rtx-4090": { "$ref": "#/$defs/envelope" },
+            "rtx-3060": { "$ref": "#/$defs/envelope" },
+            "cpu-avx2": { "$ref": "#/$defs/envelope" }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "required": ["min", "max"],
+      "additionalProperties": false,
+      "properties": {
+        "min": { "type": "number", "exclusiveMinimum": 0 },
+        "max": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

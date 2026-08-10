@@ -1,0 +1,12 @@
+# Never commit model artifacts.
+*.gguf
+
+# Go build outputs.
+tools/validate/validate
+*.test
+
+# Editor/OS noise.
+.DS_Store
+*.swp
+.idea/
+.vscode/

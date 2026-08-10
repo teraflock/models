@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hivegrid.dev/schema/fingerprint-prompts.schema.json",
+  "title": "HiveGrid fingerprint challenge prompt set",
+  "description": "Public challenge prompt sets (SPEC §2.2). Prompts are public by design; the expected outputs are precomputed privately in the control-plane repo per (model_sha, quant, runtime_build_id) tuple and never published. All generation sets use greedy decoding (temperature 0) with a fixed seed and short max_tokens so honest nodes reproduce outputs bit-for-bit for a given tuple.",
+  "type": "object",
+  "required": ["id", "kind", "description", "prompts"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^fp-[a-z0-9][a-z0-9-]*$",
+      "description": "Set id; must equal the filename (without .yaml)."
+    },
+    "kind": {
+      "enum": ["generation", "embedding"],
+      "description": "generation sets are replayed through chat completions; embedding sets through /v1/embeddings (compared by cosine similarity against reference vectors)."
+    },
+    "description": { "type": "string" },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Decode parameters applied to every prompt (generation sets only). temperature MUST be 0 for determinism.",
+      "properties": {
+        "temperature": { "type": "number", "const": 0 },
+        "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
+        "seed": { "type": "integer", "minimum": 0 },
+        "max_tokens": { "type": "integer", "minimum": 1, "maximum": 128 }
+      },
+      "required": ["temperature", "seed", "max_tokens"]
+    },
+    "prompts": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/prompt" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "generation" } } },
+      "then": { "required": ["defaults"] }
+    }
+  ],
+  "$defs": {
+    "prompt": {
+      "type": "object",
+      "required": ["id", "category"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "category": {
+          "enum": [
+            "arithmetic-chain",
+            "rare-token",
+            "format-following",
+            "embedding-probe"
+          ]
+        },
+        "prompt": {
+          "type": "string",
+          "description": "User-turn text for generation sets."
+        },
+        "input": {
+          "type": "string",
+          "description": "Input text for embedding sets."
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128,
+          "description": "Per-prompt override of defaults.max_tokens."
+        }
+      },
+      "oneOf": [{ "required": ["prompt"] }, { "required": ["input"] }]
+    }
+  }
+}

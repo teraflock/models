@@ -1,0 +1,39 @@
+# HiveGrid model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (bartowski/Mistral-Small-24B-Instruct-2501-GGUF), 2026-07-06.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+id: mistral-small-24b-instruct-2501
+family: mistral-small
+params_b: 23.6
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501
+  notes: Mistral Small 3 (2501) is Apache-2.0; no usage restrictions.
+payout_class: mid
+context_length: 32768
+embeddings: false
+fingerprint_set_id: fp-gen-v2
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF/resolve/main/Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf
+    sha256: d1a6d049f09730c3f8ba26cf6b0b60c89790b5fdafa9a59c819acdfe93fffd1b
+    size_bytes: 14333908672
+    min_vram_mb: 16384
+    min_ram_mb: 24576
+    notes: Needs 16GB+ VRAM or 24GB+ unified; rtx-3060 (12GB) cannot host it.
+    tok_s_estimates: # estimates; rtx-3060 omitted (does not fit in 12GB)
+      m2-max: { min: 14, max: 24 }
+      rtx-4090: { min: 40, max: 60 }
+      cpu-avx2: { min: 1.5, max: 3.5 }
+  - quant: Q5_K_M
+    artifact_url: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF/resolve/main/Mistral-Small-24B-Instruct-2501-Q5_K_M.gguf
+    sha256: a9470aae6112f3dee88d7d2a4469c315696f09ce6d95b6de503cdc546b9713b4
+    size_bytes: 16763983552
+    min_vram_mb: 19456
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates; rtx-3060 omitted (does not fit in 12GB)
+      m2-max: { min: 12, max: 20 }
+      rtx-4090: { min: 34, max: 52 }
+      cpu-avx2: { min: 1.2, max: 3 }

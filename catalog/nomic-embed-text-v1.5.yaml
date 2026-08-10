@@ -1,0 +1,40 @@
+# HiveGrid model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (nomic-ai/nomic-embed-text-v1.5-GGUF), 2026-07-06.
+# tok_s_estimates here are batched embedding tokens/sec (throughput), rough estimates.
+id: nomic-embed-text-v1.5
+family: nomic-embed-text
+params_b: 0.137
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/nomic-ai/nomic-embed-text-v1.5
+payout_class: nano # hardware-tier class; embeddings are priced separately (SPEC §7 note)
+context_length: 8192
+embeddings: true
+fingerprint_set_id: fp-embed-v1
+base_payout_rate: 0.0055 # USD per Mtok; embeddings priced separately (~$0.01 customer, SPEC §7)
+customer_price_per_mtok: 0.01
+source_repo: https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF
+quants:
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF/resolve/main/nomic-embed-text-v1.5.Q8_0.gguf
+    sha256: 3e24342164b3d94991ba9692fdc0dd08e3fd7362e0aacc396a9a5c54a544c3b7
+    size_bytes: 146146432
+    min_vram_mb: 512
+    min_ram_mb: 1024
+    tok_s_estimates: # batched embedding throughput, estimates
+      m2-max: { min: 2000, max: 5000 }
+      rtx-4090: { min: 5000, max: 12000 }
+      rtx-3060: { min: 2000, max: 4500 }
+      cpu-avx2: { min: 400, max: 1200 }
+  - quant: F16
+    artifact_url: https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF/resolve/main/nomic-embed-text-v1.5.f16.gguf
+    sha256: f7af6f66802f4df86eda10fe9bbcfc75c39562bed48ef6ace719a251cf1c2fdb
+    size_bytes: 274290560
+    min_vram_mb: 768
+    min_ram_mb: 1024
+    notes: F16 is the canary-reference quant for embedding comparisons.
+    tok_s_estimates: # batched embedding throughput, estimates
+      m2-max: { min: 1800, max: 4500 }
+      rtx-4090: { min: 4500, max: 11000 }
+      rtx-3060: { min: 1800, max: 4000 }
+      cpu-avx2: { min: 300, max: 900 }

@@ -1,0 +1,79 @@
+# HiveGrid fingerprint challenge set — schema/fingerprint-prompts.schema.json
+# Prompts are PUBLIC by design. Expected outputs are precomputed privately in the
+# control-plane repo, keyed by (model_sha, quant, runtime_build_id), and never
+# published. Greedy decoding + fixed seed means an honest node reproduces the
+# expected output bit-for-bit for its exact tuple; a different model, quant, or
+# runtime build diverges within a few tokens.
+id: fp-gen-v1
+kind: generation
+description: >-
+  Core discrimination set for nano/small generative models. Mixes arithmetic
+  chains (quantization error compounds across steps), rare-token continuations
+  (tokenizer- and weight-sensitive), and strict format-following (instruction
+  head sensitive). ~10 prompts, short max_tokens, greedy.
+defaults:
+  temperature: 0
+  top_p: 1.0
+  seed: 42
+  max_tokens: 32
+prompts:
+  - id: arith-chain-01
+    category: arithmetic-chain
+    prompt: >-
+      Start with 17. Multiply by 13, add 111, divide by 4, subtract 19. Reply
+      with only the final number, no words.
+    max_tokens: 16
+  - id: arith-chain-02
+    category: arithmetic-chain
+    prompt: >-
+      Compute 7381 * 29, then take the digit sum of the result, then square
+      that. Reply with only the three numbers separated by commas.
+    max_tokens: 24
+  - id: arith-chain-03
+    category: arithmetic-chain
+    prompt: >-
+      What is 999983 modulo 7919? Answer with only the number.
+    max_tokens: 12
+  - id: rare-token-01
+    category: rare-token
+    prompt: >-
+      Continue this exact sequence of chemical element symbols with the next
+      three, comma-separated: Pr, Nd, Pm, Sm,
+    max_tokens: 16
+  - id: rare-token-02
+    category: rare-token
+    prompt: >-
+      Complete the word that begins: "floccinaucinihilipili". Reply with the
+      complete word only.
+    max_tokens: 16
+  - id: rare-token-03
+    category: rare-token
+    prompt: >-
+      Transliterate the Greek word "συνειδητότητα" into Latin characters. Reply
+      with the transliteration only.
+    max_tokens: 20
+  - id: format-01
+    category: format-following
+    prompt: >-
+      Output a JSON object with exactly these keys in this order: "a" set to 3,
+      "bb" set to the string "x|y", "ccc" set to false. Minified, no spaces, no
+      code fences.
+    max_tokens: 28
+  - id: format-02
+    category: format-following
+    prompt: >-
+      Write the numbers 1 through 5 as a semicolon-separated list in reverse
+      order, each wrapped in square brackets. Output only the list.
+    max_tokens: 24
+  - id: format-03
+    category: format-following
+    prompt: >-
+      Repeat the following string exactly, once, with no surrounding text:
+      tok\n\t"7f;--q
+    max_tokens: 16
+  - id: mixed-01
+    category: arithmetic-chain
+    prompt: >-
+      Take the number of letters in "pneumonoultramicroscopicsilicovolcanoconiosis",
+      multiply by 3, subtract 8. Reply with only the number.
+    max_tokens: 12

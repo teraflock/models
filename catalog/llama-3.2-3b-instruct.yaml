@@ -1,0 +1,44 @@
+# HiveGrid model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (bartowski/Llama-3.2-3B-Instruct-GGUF), 2026-07-06.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+id: llama-3.2-3b-instruct
+family: llama-3.2
+params_b: 3.21
+license:
+  name: Llama 3.2 Community License
+  url: https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct/blob/main/LICENSE.txt
+  notes: >-
+    Not OSI open source. Commercial use and hosted serving are permitted, but the
+    license carries attribution ("Built with Llama"), acceptable-use, and >700M-MAU
+    relicensing conditions. SPEC §13.2: legal pass required on the catalog before
+    commercial launch.
+payout_class: nano
+context_length: 131072
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.022 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.04
+source_repo: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf
+    sha256: 6c1a2b41161032677be168d354123594c0e6e67d2b9227c84f296ad037c728ff
+    size_bytes: 2019377696
+    min_vram_mb: 2600
+    min_ram_mb: 4096
+    tok_s_estimates: # estimates
+      m2-max: { min: 60, max: 100 }
+      rtx-4090: { min: 130, max: 200 }
+      rtx-3060: { min: 60, max: 100 }
+      cpu-avx2: { min: 12, max: 25 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q8_0.gguf
+    sha256: b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921
+    size_bytes: 3421899296
+    min_vram_mb: 4200
+    min_ram_mb: 6144
+    tok_s_estimates: # estimates
+      m2-max: { min: 45, max: 75 }
+      rtx-4090: { min: 100, max: 160 }
+      rtx-3060: { min: 45, max: 75 }
+      cpu-avx2: { min: 7, max: 15 }

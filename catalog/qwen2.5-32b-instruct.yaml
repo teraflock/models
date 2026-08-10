@@ -1,0 +1,30 @@
+# HiveGrid model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (bartowski/Qwen2.5-32B-Instruct-GGUF), 2026-07-06.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+id: qwen2.5-32b-instruct
+family: qwen2.5
+params_b: 32.76
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/Qwen/Qwen2.5-32B-Instruct/blob/main/LICENSE
+payout_class: mid
+context_length: 32768
+embeddings: false
+fingerprint_set_id: fp-gen-v2
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/bartowski/Qwen2.5-32B-Instruct-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/bartowski/Qwen2.5-32B-Instruct-GGUF/resolve/main/Qwen2.5-32B-Instruct-Q4_K_M.gguf
+    sha256: 2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e
+    size_bytes: 19851336576
+    min_vram_mb: 22528
+    min_ram_mb: 32768
+    notes: >-
+      Needs a 24GB GPU (tight with KV cache; short-context only on a 4090) or
+      32GB+ unified memory. Premium-hardware class per SPEC §7.
+    tok_s_estimates: # estimates; rtx-3060 omitted (does not fit in 12GB)
+      m2-max: { min: 10, max: 17 }
+      rtx-4090: { min: 28, max: 42 }
+      cpu-avx2: { min: 1, max: 2.5 }
