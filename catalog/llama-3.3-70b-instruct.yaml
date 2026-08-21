@@ -1,4 +1,4 @@
-# HiveGrid model manifest — schema/manifest.schema.json
+# Teraflock model manifest — schema/manifest.schema.json
 # sha256/size_bytes verified against the HuggingFace API (bartowski/Llama-3.3-70B-Instruct-GGUF), 2026-07-06.
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 id: llama-3.3-70b-instruct

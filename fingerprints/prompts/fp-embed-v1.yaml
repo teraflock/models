@@ -1,4 +1,4 @@
-# HiveGrid fingerprint challenge set — schema/fingerprint-prompts.schema.json
+# Teraflock fingerprint challenge set — schema/fingerprint-prompts.schema.json
 # Embedding probes: the coordinator embeds each input on the node under test and
 # compares against private reference vectors (cosine similarity threshold per
 # (model_sha, quant, runtime_build_id) tuple). Inputs are public; reference

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://hivegrid.dev/schema/manifest.schema.json",
-  "title": "HiveGrid model catalog manifest",
-  "description": "One manifest per model in catalog/<id>.yaml. Fields align with hive.types.v1.ModelSpec (proto repo) plus catalog-only metadata per SPEC §4.6 and §7. Per-quant sha256/size_bytes come from the upstream artifact host and are verified by hived before serving; tok/s envelopes are honest rough estimates used by the trust engine's timing sanity checks, not benchmarks.",
+  "$id": "https://teraflock.dev/schema/manifest.schema.json",
+  "title": "Teraflock model catalog manifest",
+  "description": "One manifest per model in catalog/<id>.yaml. Fields align with flock.types.v1.ModelSpec (proto repo) plus catalog-only metadata per SPEC §4.6 and §7. Per-quant sha256/size_bytes come from the upstream artifact host and are verified by flockd before serving; tok/s envelopes are honest rough estimates used by the trust engine's timing sanity checks, not benchmarks.",
   "type": "object",
   "required": [
     "id",
@@ -113,7 +113,7 @@
         "sha256": {
           "type": "string",
           "pattern": "^([0-9a-f]{64}|TODO-verify)$",
-          "description": "SHA-256 of the artifact. hived refuses to serve on mismatch (SPEC §6). 'TODO-verify' is permitted only while a manifest is in draft; CI policy may reject it on release branches."
+          "description": "SHA-256 of the artifact. flockd refuses to serve on mismatch (SPEC §6). 'TODO-verify' is permitted only while a manifest is in draft; CI policy may reject it on release branches."
         },
         "size_bytes": {
           "type": "integer",

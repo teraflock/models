@@ -1,4 +1,4 @@
-# HiveGrid fingerprint challenge set — schema/fingerprint-prompts.schema.json
+# Teraflock fingerprint challenge set — schema/fingerprint-prompts.schema.json
 # Prompts are PUBLIC by design. Expected outputs are precomputed privately in the
 # control-plane repo, keyed by (model_sha, quant, runtime_build_id), and never
 # published. Greedy decoding + fixed seed means an honest node reproduces the

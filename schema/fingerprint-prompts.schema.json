@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://hivegrid.dev/schema/fingerprint-prompts.schema.json",
-  "title": "HiveGrid fingerprint challenge prompt set",
+  "$id": "https://teraflock.dev/schema/fingerprint-prompts.schema.json",
+  "title": "Teraflock fingerprint challenge prompt set",
   "description": "Public challenge prompt sets (SPEC §2.2). Prompts are public by design; the expected outputs are precomputed privately in the control-plane repo per (model_sha, quant, runtime_build_id) tuple and never published. All generation sets use greedy decoding (temperature 0) with a fixed seed and short max_tokens so honest nodes reproduce outputs bit-for-bit for a given tuple.",
   "type": "object",
   "required": ["id", "kind", "description", "prompts"],

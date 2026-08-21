@@ -1,7 +1,7 @@
-# hivegrid/models
+# teraflock/models
 
 Open-source model catalog and public fingerprint challenge sets for the
-[HiveGrid](../README.md) mesh. Apache-2.0.
+[Teraflock](../README.md) mesh. Apache-2.0.
 
 This repo is data, not code (plus a small Go validator). It is the source of
 truth for **which models the mesh serves, at which quants, at what prices, and
@@ -19,7 +19,7 @@ tools/validate/               Go validator (schema + cross-checks), run in CI
 
 ## Catalog manifests
 
-Each `catalog/<model-id>.yaml` supplies everything `hive.types.v1.ModelSpec`
+Each `catalog/<model-id>.yaml` supplies everything `flock.types.v1.ModelSpec`
 needs (see the `proto` repo) plus catalog-only metadata:
 
 - **Identity:** `id`, `family`, `params_b`, `context_length`, `embeddings`.
@@ -33,7 +33,7 @@ needs (see the `proto` repo) plus catalog-only metadata:
   payout ≈ 55% of price). Embedding models are priced separately (~$0.01/Mtok).
 - **Per-quant artifacts:** `quant` (canonical llama.cpp name), `artifact_url`
   (real upstream GGUF URL; production nodes fetch through our HF-proxying CDN),
-  `sha256` + `size_bytes` (verified against the upstream host; `hived` refuses
+  `sha256` + `size_bytes` (verified against the upstream host; `flockd` refuses
   to serve on hash mismatch), `min_vram_mb` / `min_ram_mb`, and
   `tok_s_estimates` — **rough, honest single-stream decode envelopes per
   hardware class** (`m2-max`, `rtx-4090`, `rtx-3060`, `cpu-avx2`). These are
