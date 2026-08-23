@@ -34,3 +34,27 @@ jobs:
       - name: validate catalog
         working-directory: tools/validate
         run: go run . -root ../..
+
+  publish:
+    # The hosted node catalog: flockd's default models.manifest_url points
+    # at this object, so merging to main is publishing.
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache-dependency-path: tools/validate/go.sum
+      - name: emit flat catalog
+        working-directory: tools/validate
+        run: go run . -root ../.. -emit-flat ../../catalog.json
+      - name: upload to the downloads bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          aws s3 cp catalog.json s3://teraflock-downloads/catalog/catalog.json \
+            --content-type application/json
