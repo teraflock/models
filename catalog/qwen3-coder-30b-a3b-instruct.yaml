@@ -1,0 +1,55 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 30.5B total / 3.3B active, tuned for coding/agentic use — the local
+# Cursor/Zed backend story. Classed (and priced) by TOTAL params.
+id: qwen3-coder-30b-a3b-instruct
+family: qwen3
+params_b: 30.5
+active_params_b: 3.3
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+    sha256: fadc3e5f8d42bf7e894a785b05082e47daee4df26680389817e2093056f088ad
+    size_bytes: 18556689568
+    min_vram_mb: 21300
+    min_ram_mb: 24576
+    tok_s_estimates: # estimates (3.3B active decode)
+      m2-max: { min: 45, max: 75 }
+      m4-max: { min: 60, max: 95 }
+      rtx-4090: { min: 110, max: 170 }
+      cpu-avx2: { min: 7, max: 14 }
+  - quant: Q5_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-Coder-30B-A3B-Instruct-Q5_K_M.gguf
+    sha256: 4b78837bbec5ee248e4a5642bf608b6793721af41b92589e40c8da0bce58b907
+    size_bytes: 21725584544
+    min_vram_mb: 24900
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates
+      m2-max: { min: 40, max: 68 }
+      m4-max: { min: 55, max: 88 }
+      rtx-4090: { min: 100, max: 155 }
+      cpu-avx2: { min: 6, max: 12 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-Coder-30B-A3B-Instruct-Q8_0.gguf
+    sha256: 4ff1cff607804037bf6d2168249c570baa4e1621292b159c0e06591e0d7c3066
+    size_bytes: 32483935392
+    min_vram_mb: 37200
+    min_ram_mb: 40960
+    tok_s_estimates: # estimates
+      m2-max: { min: 32, max: 55 }
+      m4-max: { min: 45, max: 72 }
+      rtx-4090-pair: { min: 85, max: 130 }
+      cpu-avx2: { min: 5, max: 10 }

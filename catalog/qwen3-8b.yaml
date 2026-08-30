@@ -1,0 +1,52 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (unsloth/Qwen3-8B-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+# Context is 32K native (131K with YaRN — we list native).
+id: qwen3-8b
+family: qwen3
+params_b: 8.2
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: small
+context_length: 32768
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.055 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.10
+source_repo: https://huggingface.co/unsloth/Qwen3-8B-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf
+    sha256: 120307ba529eb2439d6c430d94104dabd578497bc7bfe7e322b5d9933b449bd4
+    size_bytes: 5027784512
+    min_vram_mb: 5900
+    min_ram_mb: 8192
+    tok_s_estimates: # estimates
+      m2-max: { min: 40, max: 65 }
+      rtx-4090: { min: 90, max: 140 }
+      rtx-3060: { min: 40, max: 60 }
+      cpu-avx2: { min: 5, max: 11 }
+  - quant: Q5_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q5_K_M.gguf
+    sha256: 159c694b93271e4edc1dc2a305b10cf981032c8f3035a7da00973312f0331504
+    size_bytes: 5851113280
+    min_vram_mb: 6900
+    min_ram_mb: 10240
+    tok_s_estimates: # estimates
+      m2-max: { min: 35, max: 55 }
+      rtx-4090: { min: 80, max: 120 }
+      rtx-3060: { min: 33, max: 50 }
+      cpu-avx2: { min: 4, max: 9 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q8_0.gguf
+    sha256: 0cfbf745760f07a76ddeb358dd025a27f2e11d1ca9c9a4169a373d52990fe86e
+    size_bytes: 8709519168
+    min_vram_mb: 10000
+    min_ram_mb: 12288
+    tok_s_estimates: # estimates
+      m2-max: { min: 25, max: 40 }
+      rtx-4090: { min: 60, max: 90 }
+      rtx-3060: { min: 22, max: 35 }
+      cpu-avx2: { min: 3, max: 6 }

@@ -1,0 +1,45 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 80B total / 3B active, hybrid attention+SSM architecture. llama.cpp
+# support merged 2025-11 (ggml-org/llama.cpp#16095) as a correctness-first
+# implementation — decode is notably slower than Qwen3-30B-A3B for now, and
+# the estimates below reflect that; expect them to rise as kernels mature.
+# Classed (and priced) by TOTAL params like every MoE entry.
+id: qwen3-next-80b-a3b-instruct
+family: qwen3
+params_b: 80.0
+active_params_b: 3.0
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: large
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.385 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.70
+source_repo: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF
+quants:
+  - quant: IQ4_XS
+    artifact_url: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF/resolve/main/Qwen3-Next-80B-A3B-Instruct-IQ4_XS.gguf
+    sha256: 706c5575670d053829fda267691c667e9859e5f7668703afedb2dbe53d0a7374
+    size_bytes: 42644478752
+    min_vram_mb: 48900
+    min_ram_mb: 57344
+    tok_s_estimates: # estimates (immature llama.cpp kernels, see header)
+      m4-max: { min: 15, max: 30 }
+      m3-ultra: { min: 22, max: 40 }
+      cpu-avx2: { min: 1, max: 3 }
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF/resolve/main/Qwen3-Next-80B-A3B-Instruct-Q4_K_M.gguf
+    sha256: f73551b55e3796526c37772c96227151fa11af328802b8f9865d635104e280fd
+    size_bytes: 48506100512
+    min_vram_mb: 55600
+    min_ram_mb: 65536
+    tok_s_estimates: # estimates
+      m4-max: { min: 14, max: 28 }
+      m3-ultra: { min: 20, max: 38 }
+      cpu-avx2: { min: 1, max: 3 }

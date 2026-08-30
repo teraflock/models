@@ -1,0 +1,47 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/gpt-oss-20b-GGUF,
+# unsloth/gpt-oss-20b-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 20.9B total / 3.6B active — decodes at small-model speed while
+# holding mid-class quality; classed (and priced) by TOTAL params like every
+# MoE entry. MXFP4 is the native OpenAI quantization; the F16 file barely
+# differs in size because the MoE expert layers stay MXFP4 in every variant.
+id: gpt-oss-20b
+family: gpt-oss
+params_b: 20.9
+active_params_b: 3.6
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 131072
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/ggml-org/gpt-oss-20b-GGUF
+quants:
+  - quant: MXFP4
+    artifact_url: https://huggingface.co/ggml-org/gpt-oss-20b-GGUF/resolve/main/gpt-oss-20b-MXFP4.gguf
+    sha256: 27cd6c432c7672cb812a92f611cf3ba7bbc35928262bb1e1253ff4ee6ae35901
+    size_bytes: 12109566624
+    min_vram_mb: 14000
+    min_ram_mb: 16384
+    tok_s_estimates: # estimates (3.6B active decode)
+      m2-max: { min: 45, max: 75 }
+      m4-max: { min: 60, max: 95 }
+      rtx-4090: { min: 120, max: 180 }
+      cpu-avx2: { min: 8, max: 16 }
+  - quant: F16
+    artifact_url: https://huggingface.co/unsloth/gpt-oss-20b-GGUF/resolve/main/gpt-oss-20b-F16.gguf
+    sha256: 4e4f9cd88d6456e4f389e7262eca4a8d565211e2b22ece9ca7a8556168ff3c66
+    size_bytes: 13792639168
+    min_vram_mb: 16000
+    min_ram_mb: 20480
+    tok_s_estimates: # estimates
+      m2-max: { min: 40, max: 65 }
+      m4-max: { min: 55, max: 85 }
+      rtx-4090: { min: 110, max: 160 }
+      cpu-avx2: { min: 6, max: 13 }

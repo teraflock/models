@@ -1,0 +1,52 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (unsloth/gemma-4-31B-it-GGUF,
+# ggml-org/gemma-4-31B-it-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+id: gemma-4-31b-it
+family: gemma-4
+params_b: 31.3
+license:
+  name: Apache-2.0
+  url: https://ai.google.dev/gemma/docs/gemma_4_license
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/ggml-org/gemma-4-31B-it-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/main/gemma-4-31B-it-Q4_K_M.gguf
+    sha256: 38bd64c852c4b460434cc7162fa9bdcf242faf86502581a754cb72956bb17f84
+    size_bytes: 18323733440
+    min_vram_mb: 21000
+    min_ram_mb: 24576
+    tok_s_estimates: # estimates
+      m2-max: { min: 12, max: 20 }
+      m4-max: { min: 17, max: 28 }
+      rtx-4090: { min: 32, max: 50 }
+      cpu-avx2: { min: 1, max: 3 }
+  - quant: Q5_K_M
+    artifact_url: https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/main/gemma-4-31B-it-Q5_K_M.gguf
+    sha256: 95192e41190ef5eb72db92b669cea0ed733049c2265a03a64ac5a080d8605958
+    size_bytes: 21658401728
+    min_vram_mb: 24800
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates
+      m2-max: { min: 10, max: 17 }
+      m4-max: { min: 14, max: 24 }
+      rtx-4090: { min: 28, max: 44 }
+      cpu-avx2: { min: 1, max: 3 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/gemma-4-31B-it-GGUF/resolve/main/gemma-4-31B-it-Q8_0.gguf
+    sha256: fcd52cebacb165a98df5abe6fb70dbf076835f4a06e064ffb33dd739b8835c9c
+    size_bytes: 32635676896
+    min_vram_mb: 37400
+    min_ram_mb: 40960
+    tok_s_estimates: # estimates
+      m2-max: { min: 7, max: 12 }
+      m4-max: { min: 10, max: 17 }
+      rtx-4090-pair: { min: 22, max: 36 }
+      cpu-avx2: { min: 1, max: 2 }

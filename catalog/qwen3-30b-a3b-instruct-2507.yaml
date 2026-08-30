@@ -1,0 +1,56 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 30.5B total / 3.3B active — the 128GB-unified sweet spot: mid-class
+# quality at near-nano decode speed. Classed (and priced) by TOTAL params
+# like every MoE entry.
+id: qwen3-30b-a3b-instruct-2507
+family: qwen3
+params_b: 30.5
+active_params_b: 3.3
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF/resolve/main/Qwen3-30B-A3B-Instruct-2507-Q4_K_M.gguf
+    sha256: 6c997b8af17debdfb01d890214400ccbab00db6acc0ba8da5de1cc906c4774d0
+    size_bytes: 18556686752
+    min_vram_mb: 21300
+    min_ram_mb: 24576
+    tok_s_estimates: # estimates (3.3B active decode)
+      m2-max: { min: 45, max: 75 }
+      m4-max: { min: 60, max: 95 }
+      rtx-4090: { min: 110, max: 170 }
+      cpu-avx2: { min: 7, max: 14 }
+  - quant: Q5_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF/resolve/main/Qwen3-30B-A3B-Instruct-2507-Q5_K_M.gguf
+    sha256: 74cf6e525344a184e59f8dbd1d18e59587f1a03eaff66f6b1fbd0ee3a53a3d68
+    size_bytes: 21725581728
+    min_vram_mb: 24900
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates
+      m2-max: { min: 40, max: 68 }
+      m4-max: { min: 55, max: 88 }
+      rtx-4090: { min: 100, max: 155 }
+      cpu-avx2: { min: 6, max: 12 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF/resolve/main/Qwen3-30B-A3B-Instruct-2507-Q8_0.gguf
+    sha256: 47514861adaa7ae7f32818fe54595c7cbed2753417ba78df53054fcf7b9dcd88
+    size_bytes: 32483932576
+    min_vram_mb: 37200
+    min_ram_mb: 40960
+    tok_s_estimates: # estimates
+      m2-max: { min: 32, max: 55 }
+      m4-max: { min: 45, max: 72 }
+      rtx-4090-pair: { min: 85, max: 130 }
+      cpu-avx2: { min: 5, max: 10 }

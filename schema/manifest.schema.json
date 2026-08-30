@@ -32,7 +32,12 @@
     "params_b": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Parameter count in billions."
+      "description": "TOTAL parameter count in billions. Payout class (and price) key on this."
+    },
+    "active_params_b": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Parameters active per token, for Mixture-of-Experts models; omit for dense. The trust engine's timing envelopes key on this — an MoE decodes at active-param speed, and judging it by total params reads an honest node as impossibly fast (control-plane trust.TimingClass)."
     },
     "license": {
       "type": "object",
@@ -48,7 +53,7 @@
       }
     },
     "payout_class": {
-      "enum": ["nano", "small", "mid", "large"],
+      "enum": ["nano", "small", "mid", "large", "xl"],
       "description": "Pricing class per SPEC §7. Embedding models carry a class for hardware-tiering purposes but are priced separately (embeddings: true overrides the class price table)."
     },
     "context_length": {
@@ -101,7 +106,7 @@
       "properties": {
         "quant": {
           "type": "string",
-          "pattern": "^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|F16|BF16|F32)$",
+          "pattern": "^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|MXFP4|F16|BF16|F32)$",
           "description": "llama.cpp quantization name, canonical upper-case form."
         },
         "artifact_url": {
@@ -136,7 +141,10 @@
           "description": "ESTIMATED single-stream decode tokens/sec envelopes per hardware class (embedding models: batched embedding tokens/sec). Used for timing sanity checks (SPEC §2.2). Omit a class if the quant cannot reasonably run on it.",
           "properties": {
             "m2-max": { "$ref": "#/$defs/envelope" },
+            "m4-max": { "$ref": "#/$defs/envelope" },
+            "m3-ultra": { "$ref": "#/$defs/envelope" },
             "rtx-4090": { "$ref": "#/$defs/envelope" },
+            "rtx-4090-pair": { "$ref": "#/$defs/envelope" },
             "rtx-3060": { "$ref": "#/$defs/envelope" },
             "cpu-avx2": { "$ref": "#/$defs/envelope" }
           }

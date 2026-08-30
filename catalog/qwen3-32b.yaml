@@ -1,0 +1,42 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Qwen3-32B-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+# Context is 32K native (131K with YaRN — we list native). ggml-org ships
+# no Q5_K_M for this one, hence two quants.
+id: qwen3-32b
+family: qwen3
+params_b: 32.8
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 32768
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/ggml-org/Qwen3-32B-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/ggml-org/Qwen3-32B-GGUF/resolve/main/Qwen3-32B-Q4_K_M.gguf
+    sha256: 4d7312a48e7f11572045afe2b27b3bc3407f3f01ceb9aedb594ea82364f91194
+    size_bytes: 19762149152
+    min_vram_mb: 22700
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates
+      m2-max: { min: 11, max: 19 }
+      m4-max: { min: 16, max: 26 }
+      rtx-4090: { min: 30, max: 48 }
+      cpu-avx2: { min: 1, max: 3 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Qwen3-32B-GGUF/resolve/main/Qwen3-32B-Q8_0.gguf
+    sha256: e03ea4e89017eddccec7f1d052b03c2fe972042080f3aad6ea3434310f2c096d
+    size_bytes: 34817719072
+    min_vram_mb: 39900
+    min_ram_mb: 45056
+    tok_s_estimates: # estimates
+      m2-max: { min: 6, max: 11 }
+      m4-max: { min: 9, max: 15 }
+      rtx-4090-pair: { min: 20, max: 34 }
+      cpu-avx2: { min: 1, max: 2 }

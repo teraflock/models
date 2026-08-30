@@ -1,0 +1,51 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (unsloth/Qwen3-4B-Instruct-2507-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+id: qwen3-4b-instruct-2507
+family: qwen3
+params_b: 4.0
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: small
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.055 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.10
+source_repo: https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+    sha256: 3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597
+    size_bytes: 2497281120
+    min_vram_mb: 3000
+    min_ram_mb: 6144
+    tok_s_estimates: # estimates
+      m2-max: { min: 60, max: 95 }
+      rtx-4090: { min: 140, max: 210 }
+      rtx-3060: { min: 60, max: 95 }
+      cpu-avx2: { min: 10, max: 20 }
+  - quant: Q5_K_M
+    artifact_url: https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q5_K_M.gguf
+    sha256: 5bde5e9d883622acb02bf77fe7dcbc56a8b9a9ad4be78a72ca23a532658b4ecb
+    size_bytes: 2889514080
+    min_vram_mb: 3500
+    min_ram_mb: 6144
+    tok_s_estimates: # estimates
+      m2-max: { min: 55, max: 85 }
+      rtx-4090: { min: 130, max: 190 }
+      rtx-3060: { min: 55, max: 85 }
+      cpu-avx2: { min: 9, max: 17 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q8_0.gguf
+    sha256: 391c1e410fd9f4cf2de2b510273b56a84c19ce18f4fa3bfb3774031dac4ef068
+    size_bytes: 4280405600
+    min_vram_mb: 5200
+    min_ram_mb: 8192
+    tok_s_estimates: # estimates
+      m2-max: { min: 45, max: 70 }
+      rtx-4090: { min: 110, max: 160 }
+      rtx-3060: { min: 45, max: 70 }
+      cpu-avx2: { min: 7, max: 14 }

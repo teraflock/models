@@ -1,0 +1,46 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/gemma-4-26B-A4B-it-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 25.8B total / ~4B active — mid-class quality at near-nano decode
+# speed; classed (and priced) by TOTAL params like every MoE entry. No
+# reputable repo ships a standard-named K-quant (unsloth's are all UD-*),
+# so Q4_0/Q8_0 from ggml-org it is.
+id: gemma-4-26b-a4b-it
+family: gemma-4
+params_b: 25.8
+active_params_b: 4.0
+license:
+  name: Apache-2.0
+  url: https://ai.google.dev/gemma/docs/gemma_4_license
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/ggml-org/gemma-4-26B-A4B-it-GGUF
+quants:
+  - quant: Q4_0
+    artifact_url: https://huggingface.co/ggml-org/gemma-4-26B-A4B-it-GGUF/resolve/main/gemma-4-26B-A4B-it-Q4_0.gguf
+    sha256: d208665ab1cd3a69f7a9a4bc59430e8448c8093d9b06334f566ac59d6d504a03
+    size_bytes: 14618145824
+    min_vram_mb: 16800
+    min_ram_mb: 20480
+    tok_s_estimates: # estimates (~4B active decode)
+      m2-max: { min: 40, max: 65 }
+      m4-max: { min: 55, max: 85 }
+      rtx-4090: { min: 100, max: 150 }
+      cpu-avx2: { min: 6, max: 12 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/gemma-4-26B-A4B-it-GGUF/resolve/main/gemma-4-26B-A4B-it-Q8_0.gguf
+    sha256: b5108fd13147d1c866bb595295bc9d56f5fe744d7209f18421031d0cc47009c6
+    size_bytes: 26859860992
+    min_vram_mb: 30800
+    min_ram_mb: 36864
+    tok_s_estimates: # estimates
+      m2-max: { min: 30, max: 50 }
+      m4-max: { min: 42, max: 68 }
+      rtx-4090: { min: 80, max: 120 }
+      cpu-avx2: { min: 4, max: 9 }

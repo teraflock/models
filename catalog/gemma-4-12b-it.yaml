@@ -1,0 +1,59 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (unsloth/gemma-4-12b-it-GGUF,
+# ggml-org/gemma-4-12B-it-GGUF, google/gemma-4-12B-it-qat-q4_0-gguf), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# Gemma 4 is Apache-2.0 — Google dropped the bespoke "Gemma Terms of Use"
+# with this generation. The Q4_0 is Google's own QAT file (quantization-
+# aware trained: Q4_0 size at near-Q8 quality).
+id: gemma-4-12b-it
+family: gemma-4
+params_b: 12.0
+license:
+  name: Apache-2.0
+  url: https://ai.google.dev/gemma/docs/gemma_4_license
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/ggml-org/gemma-4-12B-it-GGUF
+quants:
+  - quant: Q4_0
+    artifact_url: https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf/resolve/main/gemma-4-12b-it-qat-q4_0.gguf
+    sha256: 93567e57a8fe10b23569b9d9ec38cd005deedf71e29477c421a4b83f418a538b
+    size_bytes: 6975879296
+    min_vram_mb: 8000
+    min_ram_mb: 12288
+    notes: Google's official QAT artifact — Q4_0 footprint, near-Q8 quality.
+    tok_s_estimates: # estimates
+      m2-max: { min: 28, max: 45 }
+      m4-max: { min: 38, max: 60 }
+      rtx-4090: { min: 70, max: 110 }
+      rtx-3060: { min: 26, max: 42 }
+      cpu-avx2: { min: 4, max: 8 }
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/unsloth/gemma-4-12b-it-GGUF/resolve/main/gemma-4-12b-it-Q4_K_M.gguf
+    sha256: 0a270ec9fe6b34f4a0d33992b6135117b484ebc4766ab76b51d4ae8c457e4c42
+    size_bytes: 7121861440
+    min_vram_mb: 8200
+    min_ram_mb: 12288
+    tok_s_estimates: # estimates
+      m2-max: { min: 28, max: 45 }
+      m4-max: { min: 38, max: 60 }
+      rtx-4090: { min: 70, max: 110 }
+      rtx-3060: { min: 25, max: 40 }
+      cpu-avx2: { min: 4, max: 8 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/gemma-4-12B-it-GGUF/resolve/main/gemma-4-12B-it-Q8_0.gguf
+    sha256: abfc3044b93795f6a446fc1a04468ac2d5fc5e9c92e237f09a5b3384c5a433e4
+    size_bytes: 12669646976
+    min_vram_mb: 14500
+    min_ram_mb: 16384
+    tok_s_estimates: # estimates
+      m2-max: { min: 18, max: 30 }
+      m4-max: { min: 26, max: 42 }
+      rtx-4090: { min: 50, max: 80 }
+      cpu-avx2: { min: 3, max: 6 }

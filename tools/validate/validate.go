@@ -19,6 +19,7 @@ type Manifest struct {
 	ID            string  `yaml:"id"`
 	Family        string  `yaml:"family"`
 	ParamsB       float64 `yaml:"params_b"`
+	ActiveParamsB float64 `yaml:"active_params_b"`
 	License       License `yaml:"license"`
 	PayoutClass   string  `yaml:"payout_class"`
 	ContextLength int     `yaml:"context_length"`
@@ -83,6 +84,7 @@ var classPricing = map[string][2]float64{
 	"small": {0.055, 0.10},
 	"mid":   {0.165, 0.30},
 	"large": {0.385, 0.70},
+	"xl":    {1.10, 2.00}, // added with SPEC §7 xl row, 2026-08-30
 }
 
 // embeddingPricing overrides the class table for embeddings-flagged models
@@ -90,16 +92,21 @@ var classPricing = map[string][2]float64{
 var embeddingPricing = [2]float64{0.0055, 0.01}
 
 // classParamBounds validates payout_class against params_b (billions):
-// nano ≤3.5, small (3.5,9], mid (9,40], large >40.
+// nano ≤3.5, small (3.5,9], mid (9,40], large (40,150], xl >150.
+// Bounds are on TOTAL params — MoE models class (and price) by total, not
+// active: what the customer buys is the big model's quality, and what the
+// operator must provision is the big model's memory.
 var classParamBounds = map[string][2]float64{
 	"nano":  {0, 3.5},
 	"small": {3.5, 9},
 	"mid":   {9, 40},
-	"large": {40, math.MaxFloat64},
+	"large": {40, 150},
+	"xl":    {150, math.MaxFloat64},
 }
 
 var (
-	quantNameRE = regexp.MustCompile(`^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|F16|BF16|F32)$`)
+	// MXFP4 is gpt-oss's native (and only meaningful) quantization.
+	quantNameRE = regexp.MustCompile(`^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|MXFP4|F16|BF16|F32)$`)
 	sha256RE    = regexp.MustCompile(`^[0-9a-f]{64}$`)
 )
 
@@ -204,6 +211,14 @@ func CheckManifest(m Manifest, sets map[string]FingerprintSet) []string {
 	} else if m.ParamsB <= b[0] || m.ParamsB > b[1] {
 		issues = append(issues, fmt.Sprintf("payout_class %q does not fit params_b=%.3g (expected (%g, %g])",
 			m.PayoutClass, m.ParamsB, b[0], b[1]))
+	}
+
+	// MoE sanity: active params, when declared, must be a strict subset of
+	// total. (The trust engine's timing envelopes key on this — see the
+	// schema's active_params_b description.)
+	if m.ActiveParamsB > 0 && m.ActiveParamsB >= m.ParamsB {
+		issues = append(issues, fmt.Sprintf("active_params_b=%.3g must be < params_b=%.3g",
+			m.ActiveParamsB, m.ParamsB))
 	}
 
 	// Pricing table (SPEC §7).

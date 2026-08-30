@@ -1,0 +1,35 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/gpt-oss-120b-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 116.8B total / 5.1B active. The flagship for 128GB unified boxes
+# (M3/M4 Max-Ultra, DGX Spark): one 63GB file, ~96GB working set, decodes
+# at ~5B-active speed. Single-file despite >50GB — ggml-org publishes it
+# xet-backed, so the usual HF 50GB LFS cap does not apply here.
+id: gpt-oss-120b
+family: gpt-oss
+params_b: 116.8
+active_params_b: 5.1
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: large
+context_length: 131072
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.385 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.70
+source_repo: https://huggingface.co/ggml-org/gpt-oss-120b-GGUF
+quants:
+  - quant: MXFP4
+    artifact_url: https://huggingface.co/ggml-org/gpt-oss-120b-GGUF/resolve/main/gpt-oss-120b-MXFP4.gguf
+    sha256: 582bd40f6886200101f4c4ed9f25f3fe80cc14c86e9e2b37746cd8904a0c622d
+    size_bytes: 63387346208
+    min_vram_mb: 72600
+    min_ram_mb: 98304
+    tok_s_estimates: # estimates (5.1B active decode, memory-bandwidth bound)
+      m4-max: { min: 30, max: 55 }
+      m3-ultra: { min: 45, max: 75 }
+      rtx-4090-pair: { min: 25, max: 45 }
+      cpu-avx2: { min: 2, max: 5 }
