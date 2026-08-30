@@ -3,6 +3,7 @@
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 # Context is 32K native (131K with YaRN — we list native).
 id: qwen3-8b
+display_name: Qwen3 8B
 family: qwen3
 params_b: 8.2
 license:

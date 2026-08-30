@@ -17,6 +17,7 @@ import (
 // Manifest mirrors schema/manifest.schema.json for cross-checks.
 type Manifest struct {
 	ID            string  `yaml:"id"`
+	DisplayName   string  `yaml:"display_name"`
 	Family        string  `yaml:"family"`
 	ParamsB       float64 `yaml:"params_b"`
 	ActiveParamsB float64 `yaml:"active_params_b"`

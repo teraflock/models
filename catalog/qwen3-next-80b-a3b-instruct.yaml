@@ -8,6 +8,7 @@
 # the estimates below reflect that; expect them to rise as kernels mature.
 # Classed (and priced) by TOTAL params like every MoE entry.
 id: qwen3-next-80b-a3b-instruct
+display_name: Qwen3 Next 80B A3B
 family: qwen3
 params_b: 80.0
 active_params_b: 3.0

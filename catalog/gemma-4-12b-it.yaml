@@ -7,6 +7,7 @@
 # with this generation. The Q4_0 is Google's own QAT file (quantization-
 # aware trained: Q4_0 size at near-Q8 quality).
 id: gemma-4-12b-it
+display_name: Gemma 4 12B
 family: gemma-4
 params_b: 12.0
 license:

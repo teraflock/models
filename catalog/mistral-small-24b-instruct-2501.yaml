@@ -2,6 +2,7 @@
 # sha256/size_bytes verified against the HuggingFace API (bartowski/Mistral-Small-24B-Instruct-2501-GGUF), 2026-07-06.
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 id: mistral-small-24b-instruct-2501
+display_name: Mistral Small 3 24B
 family: mistral-small
 params_b: 23.6
 license:

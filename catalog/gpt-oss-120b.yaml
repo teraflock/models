@@ -7,6 +7,7 @@
 # at ~5B-active speed. Single-file despite >50GB — ggml-org publishes it
 # xet-backed, so the usual HF 50GB LFS cap does not apply here.
 id: gpt-oss-120b
+display_name: GPT-OSS 120B
 family: gpt-oss
 params_b: 116.8
 active_params_b: 5.1

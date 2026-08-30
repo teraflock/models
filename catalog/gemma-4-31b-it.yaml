@@ -3,6 +3,7 @@
 # ggml-org/gemma-4-31B-it-GGUF), 2026-08-30.
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 id: gemma-4-31b-it
+display_name: Gemma 4 31B
 family: gemma-4
 params_b: 31.3
 license:

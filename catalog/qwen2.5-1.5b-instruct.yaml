@@ -2,6 +2,7 @@
 # sha256/size_bytes verified against the HuggingFace API (bartowski/Qwen2.5-1.5B-Instruct-GGUF), 2026-07-06.
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 id: qwen2.5-1.5b-instruct
+display_name: Qwen 2.5 1.5B Instruct
 family: qwen2.5
 params_b: 1.54
 license:

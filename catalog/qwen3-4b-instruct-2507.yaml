@@ -2,6 +2,7 @@
 # sha256/size_bytes verified against the HuggingFace API (unsloth/Qwen3-4B-Instruct-2507-GGUF), 2026-08-30.
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 id: qwen3-4b-instruct-2507
+display_name: Qwen3 4B Instruct 2507
 family: qwen3
 params_b: 4.0
 license:

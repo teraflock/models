@@ -8,6 +8,7 @@
 # MoE entry. MXFP4 is the native OpenAI quantization; the F16 file barely
 # differs in size because the MoE expert layers stay MXFP4 in every variant.
 id: gpt-oss-20b
+display_name: GPT-OSS 20B
 family: gpt-oss
 params_b: 20.9
 active_params_b: 3.6

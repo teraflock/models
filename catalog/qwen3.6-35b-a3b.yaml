@@ -1,0 +1,47 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Qwen3.6-35B-A3B-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 36B total / 3B active (256 experts, 8 routed + 1 shared) — the
+# Qwen3.6-generation successor to the 30B-A3B sweet spot. Upstream is a
+# vision-language release; we serve TEXT ONLY (mmproj/mtp/dflash sidecar
+# files deliberately not catalogued). Classed (and priced) by TOTAL params.
+id: qwen3.6-35b-a3b
+display_name: Qwen3.6 35B A3B
+family: qwen3.6
+params_b: 36.0
+active_params_b: 3.0
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/LICENSE
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-Q4_K_M.gguf
+    sha256: 671e47e0ec53c665d048b98c3ecbfd5236b5ca9c3e02ed19fc8f81f7b85140c7
+    size_bytes: 20419565568
+    min_vram_mb: 23400
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates (3B active decode)
+      m2-max: { min: 42, max: 70 }
+      m4-max: { min: 56, max: 90 }
+      rtx-4090: { min: 105, max: 160 }
+      cpu-avx2: { min: 6, max: 13 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-Q8_0.gguf
+    sha256: d8d7842cc657d720f39546878e431937c84473aa130c36371669ac17c80c7361
+    size_bytes: 36903139328
+    min_vram_mb: 42200
+    min_ram_mb: 49152
+    tok_s_estimates: # estimates
+      m2-max: { min: 30, max: 52 }
+      m4-max: { min: 42, max: 68 }
+      rtx-4090-pair: { min: 80, max: 125 }
+      cpu-avx2: { min: 4, max: 9 }

@@ -6,6 +6,7 @@
   "type": "object",
   "required": [
     "id",
+    "display_name",
     "family",
     "params_b",
     "license",
@@ -28,6 +29,11 @@
     "family": {
       "type": "string",
       "description": "Model family, e.g. llama-3.1, qwen2.5."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name shown on customer surfaces (website, console, playground pickers), e.g. \"Qwen3 8B\" or \"Qwen3.8 27B\". IDs alone are ambiguous now that model lines carry point versions — qwen3-8b (Qwen3, 8B) vs qwen3.8-27b (Qwen3.8, 27B)."
     },
     "params_b": {
       "type": "number",

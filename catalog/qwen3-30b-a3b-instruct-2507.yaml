@@ -6,6 +6,7 @@
 # quality at near-nano decode speed. Classed (and priced) by TOTAL params
 # like every MoE entry.
 id: qwen3-30b-a3b-instruct-2507
+display_name: Qwen3 30B A3B Instruct 2507
 family: qwen3
 params_b: 30.5
 active_params_b: 3.3

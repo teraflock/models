@@ -2,6 +2,7 @@
 # sha256/size_bytes verified against the HuggingFace API (bartowski/Meta-Llama-3.1-8B-Instruct-GGUF), 2026-07-06.
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 id: llama-3.1-8b-instruct
+display_name: Llama 3.1 8B Instruct
 family: llama-3.1
 params_b: 8.03
 license:

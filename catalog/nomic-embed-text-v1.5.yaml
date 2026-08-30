@@ -2,6 +2,7 @@
 # sha256/size_bytes verified against the HuggingFace API (nomic-ai/nomic-embed-text-v1.5-GGUF), 2026-07-06.
 # tok_s_estimates here are batched embedding tokens/sec (throughput), rough estimates.
 id: nomic-embed-text-v1.5
+display_name: Nomic Embed Text v1.5
 family: nomic-embed-text
 params_b: 0.137
 license:

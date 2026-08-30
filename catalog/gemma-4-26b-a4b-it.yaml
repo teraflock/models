@@ -7,6 +7,7 @@
 # reputable repo ships a standard-named K-quant (unsloth's are all UD-*),
 # so Q4_0/Q8_0 from ggml-org it is.
 id: gemma-4-26b-a4b-it
+display_name: Gemma 4 26B A4B
 family: gemma-4
 params_b: 25.8
 active_params_b: 4.0

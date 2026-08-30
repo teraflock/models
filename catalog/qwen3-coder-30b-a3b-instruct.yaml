@@ -5,6 +5,7 @@
 # MoE: 30.5B total / 3.3B active, tuned for coding/agentic use — the local
 # Cursor/Zed backend story. Classed (and priced) by TOTAL params.
 id: qwen3-coder-30b-a3b-instruct
+display_name: Qwen3 Coder 30B A3B
 family: qwen3
 params_b: 30.5
 active_params_b: 3.3

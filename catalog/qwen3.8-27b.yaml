@@ -1,0 +1,46 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Qwen3.8-27B-GGUF), 2026-08-30.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# Dense 27.8B on the Qwen3.5 architecture — the current "state-of-the-art
+# laptop size" line. Upstream is a vision-language release; we serve TEXT
+# ONLY (the mmproj sidecar files are deliberately not catalogued — vision
+# needs runtime plumbing the mesh doesn't have yet).
+id: qwen3.8-27b
+display_name: Qwen3.8 27B
+family: qwen3.8
+params_b: 27.8
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/Qwen/Qwen3.8-27B/blob/main/LICENSE
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
+customer_price_per_mtok: 0.30
+source_repo: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q4_K_M.gguf
+    sha256: 31629f53165ab6a7dad8c9847dcfd1fdf55829dac1e6e748f4a68581b0033d34
+    size_bytes: 18973870432
+    min_vram_mb: 21800
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates
+      m2-max: { min: 12, max: 21 }
+      m4-max: { min: 18, max: 30 }
+      rtx-4090: { min: 34, max: 52 }
+      cpu-avx2: { min: 1, max: 3 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q8_0.gguf
+    sha256: f5c702d8820d36fb55985bb238fc83ee3a313e920f4b752a437c3a6a9e14e4c8
+    size_bytes: 28595763552
+    min_vram_mb: 32700
+    min_ram_mb: 36864
+    tok_s_estimates: # estimates
+      m2-max: { min: 8, max: 14 }
+      m4-max: { min: 11, max: 19 }
+      rtx-4090-pair: { min: 24, max: 40 }
+      cpu-avx2: { min: 1, max: 2 }
