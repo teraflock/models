@@ -18,6 +18,7 @@ import (
 // identically.
 type flatModel struct {
 	ID            string  `json:"id"`
+	DisplayName   string  `json:"display_name"`
 	Family        string  `json:"family"`
 	ParamsB       float64 `json:"params_b"`
 	Quant         string  `json:"quant"`
@@ -58,6 +59,7 @@ func EmitFlat(root string) ([]byte, error) {
 			}
 			out = append(out, flatModel{
 				ID:            m.ID + "-" + lowerQuant(q.Quant),
+				DisplayName:   m.DisplayName + " · " + q.Quant,
 				Family:        m.Family,
 				ParamsB:       m.ParamsB,
 				Quant:         q.Quant,
