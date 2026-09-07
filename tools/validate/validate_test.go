@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -228,4 +230,128 @@ func TestFingerprintSetChecks(t *testing.T) {
 	assertIssue(t, issues, `duplicate prompt id "a"`)
 	assertIssue(t, issues, "need a non-empty 'prompt'")
 	assertIssue(t, issues, "must not set 'input'")
+}
+
+// Mixture-of-Experts manifests must declare active_params_b (models#1): the
+// trust engine's timing envelopes key on it, and an omission reads every
+// honest node serving the model as impossibly fast.
+func TestMoERequiresActiveParams(t *testing.T) {
+	moe := func() Manifest {
+		m := validManifest()
+		m.ID = "qwen3.6-35b-a3b"
+		m.SourceRepo = "https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF"
+		m.ParamsB = 36
+		m.PayoutClass = "mid"
+		m.BasePayout, m.CustomerPrice = classPricing["mid"][0], classPricing["mid"][1]
+		return m
+	}
+
+	// Heuristic: the -aNb suffix without the field.
+	assertIssue(t, CheckManifest(moe(), testSets), "looks like a Mixture-of-Experts model")
+
+	// The same manifest with the field passes.
+	m := moe()
+	m.ActiveParamsB = 3
+	if issues := CheckManifest(m, testSets); len(issues) != 0 {
+		t.Fatalf("MoE with active_params_b: unexpected issues %v", issues)
+	}
+	m.Architecture = "moe"
+	if issues := CheckManifest(m, testSets); len(issues) != 0 {
+		t.Fatalf("architecture: moe with active_params_b: unexpected issues %v", issues)
+	}
+
+	// Explicit field catches names without the suffix (gpt-oss style).
+	g := validManifest()
+	g.ID = "gpt-oss-20b"
+	g.SourceRepo = "https://huggingface.co/ggml-org/gpt-oss-20b-GGUF"
+	g.ParamsB = 20.9
+	g.PayoutClass = "mid"
+	g.BasePayout, g.CustomerPrice = classPricing["mid"][0], classPricing["mid"][1]
+	if issues := CheckManifest(g, testSets); len(issues) != 0 {
+		t.Fatalf("no signal, no field: the heuristic must stay quiet, got %v", issues)
+	}
+	g.Architecture = "moe"
+	assertIssue(t, CheckManifest(g, testSets), "architecture: moe requires active_params_b")
+	g.ActiveParamsB = 3.6
+	if issues := CheckManifest(g, testSets); len(issues) != 0 {
+		t.Fatalf("gpt-oss with architecture+active: unexpected issues %v", issues)
+	}
+
+	// Dense forbids the field; unknown values are rejected.
+	d := validManifest()
+	d.Architecture = "dense"
+	if issues := CheckManifest(d, testSets); len(issues) != 0 {
+		t.Fatalf("dense: unexpected issues %v", issues)
+	}
+	d.ActiveParamsB = 2
+	assertIssue(t, CheckManifest(d, testSets), "architecture: dense must not set active_params_b")
+	d.Architecture = "sparse"
+	assertIssue(t, CheckManifest(d, testSets), `architecture "sparse" must be dense or moe`)
+
+	// "moe" in the upstream repo name is a signal too.
+	r := validManifest()
+	r.SourceRepo = "https://huggingface.co/x/Some-MoE-GGUF"
+	assertIssue(t, CheckManifest(r, testSets), "looks like a Mixture-of-Experts model")
+}
+
+// The negative fixture from the issue: the committed qwen3.6-35b-a3b
+// manifest with active_params_b removed, validated through Run in a
+// scratch repo root, must report the new issue.
+func TestRunFlagsMoEManifestWithoutActiveParams(t *testing.T) {
+	root := t.TempDir()
+	for _, dir := range []string{"schema", "fingerprints/prompts"} {
+		src := filepath.Join(repoRoot, dir)
+		dst := filepath.Join(root, dir)
+		if err := os.MkdirAll(dst, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		entries, err := os.ReadDir(src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			b, err := os.ReadFile(filepath.Join(src, e.Name()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(dst, e.Name()), b, 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	src, err := os.ReadFile(filepath.Join(repoRoot, "catalog", "qwen3.6-35b-a3b.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var kept []string
+	dropped := false
+	for _, line := range strings.Split(string(src), "\n") {
+		if strings.HasPrefix(line, "active_params_b:") || strings.HasPrefix(line, "architecture:") {
+			dropped = true
+			continue
+		}
+		kept = append(kept, line)
+	}
+	if !dropped {
+		t.Fatal("fixture manifest has no active_params_b line to drop")
+	}
+	if err := os.MkdirAll(filepath.Join(root, "catalog"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "catalog", "qwen3.6-35b-a3b.yaml"), []byte(strings.Join(kept, "\n")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	issues, err := Run(root)
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	assertIssue(t, issues, "looks like a Mixture-of-Experts model")
+	for _, is := range issues {
+		if !strings.Contains(is, "Mixture-of-Experts") {
+			t.Errorf("unexpected extra issue: %s", is)
+		}
+	}
 }

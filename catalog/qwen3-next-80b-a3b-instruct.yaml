@@ -12,6 +12,7 @@ display_name: Qwen3 Next 80B A3B
 family: qwen3
 params_b: 80.0
 active_params_b: 3.0
+architecture: moe
 license:
   name: Apache-2.0
   url: https://www.apache.org/licenses/LICENSE-2.0

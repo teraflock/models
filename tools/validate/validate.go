@@ -21,6 +21,7 @@ type Manifest struct {
 	Family        string  `yaml:"family"`
 	ParamsB       float64 `yaml:"params_b"`
 	ActiveParamsB float64 `yaml:"active_params_b"`
+	Architecture  string  `yaml:"architecture"` // dense|moe|"" (see moeNameRE)
 	License       License `yaml:"license"`
 	PayoutClass   string  `yaml:"payout_class"`
 	ContextLength int     `yaml:"context_length"`
@@ -112,6 +113,23 @@ var (
 )
 
 const shaPlaceholder = "TODO-verify"
+
+// moeNameRE is the naming convention every Mixture-of-Experts release in
+// the catalog follows: a "-a<N>b" active-parameter suffix (30b-a3b,
+// 80b-a3b, 26b-a4b, 35b-a3b). gpt-oss-style names carry no such hint,
+// which is what the explicit `architecture: moe` field is for.
+var moeNameRE = regexp.MustCompile(`(?i)-a\d+(\.\d+)?b\b`)
+
+// looksMoE reports whether the id or upstream repo name signals a
+// Mixture-of-Experts model.
+func looksMoE(m Manifest) bool {
+	for _, s := range []string{m.ID, m.SourceRepo} {
+		if moeNameRE.MatchString(s) || strings.Contains(strings.ToLower(s), "moe") {
+			return true
+		}
+	}
+	return false
+}
 
 // Run validates the whole repo rooted at root and returns human-readable
 // issues. A non-nil error means the repo could not be validated at all
@@ -220,6 +238,28 @@ func CheckManifest(m Manifest, sets map[string]FingerprintSet) []string {
 	if m.ActiveParamsB > 0 && m.ActiveParamsB >= m.ParamsB {
 		issues = append(issues, fmt.Sprintf("active_params_b=%.3g must be < params_b=%.3g",
 			m.ActiveParamsB, m.ParamsB))
+	}
+
+	// MoE manifests must declare active_params_b (models#1): without it
+	// the trust engine judges an MoE by its total size, reads every honest
+	// node serving it as impossibly fast, and five consecutive timing
+	// flags slash. Two signals catch the omission — the explicit
+	// `architecture` field, and the -a<N>b naming convention.
+	switch m.Architecture {
+	case "", "dense", "moe":
+	default:
+		issues = append(issues, fmt.Sprintf("architecture %q must be dense or moe", m.Architecture))
+	}
+	switch {
+	case m.Architecture == "moe" && m.ActiveParamsB <= 0:
+		issues = append(issues, "architecture: moe requires active_params_b (parameters active per token); "+
+			"the trust engine's timing envelopes will misjudge honest nodes without it")
+	case m.Architecture == "dense" && m.ActiveParamsB > 0:
+		issues = append(issues, fmt.Sprintf("architecture: dense must not set active_params_b=%.3g "+
+			"(drop the field, or set architecture: moe)", m.ActiveParamsB))
+	case m.Architecture == "" && m.ActiveParamsB <= 0 && looksMoE(m):
+		issues = append(issues, "looks like a Mixture-of-Experts model (id suffix -aNb) but has no active_params_b; "+
+			"the trust engine's timing envelopes will misjudge honest nodes — add active_params_b (and architecture: moe)")
 	}
 
 	// Pricing table (SPEC §7).

@@ -43,7 +43,11 @@
     "active_params_b": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Parameters active per token, for Mixture-of-Experts models; omit for dense. The trust engine's timing envelopes key on this — an MoE decodes at active-param speed, and judging it by total params reads an honest node as impossibly fast (control-plane trust.TimingClass)."
+      "description": "Parameters active per token, for Mixture-of-Experts models; omit for dense. The trust engine's timing envelopes key on this — an MoE decodes at active-param speed, and judging it by total params reads an honest node as impossibly fast (control-plane trust.TimingClass). REQUIRED for MoE: the validator rejects a manifest whose architecture is moe, or whose id/source_repo carries the -a<N>b MoE suffix, without it."
+    },
+    "architecture": {
+      "enum": ["dense", "moe"],
+      "description": "Dense or Mixture-of-Experts. Set it on every new manifest. moe requires active_params_b; dense forbids it. Optional only so existing manifests need not change; the -a<N>b naming heuristic covers those, and this field is what catches MoE releases without the suffix (gpt-oss)."
     },
     "license": {
       "type": "object",

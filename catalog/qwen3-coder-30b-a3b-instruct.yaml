@@ -9,6 +9,7 @@ display_name: Qwen3 Coder 30B A3B
 family: qwen3
 params_b: 30.5
 active_params_b: 3.3
+architecture: moe
 license:
   name: Apache-2.0
   url: https://www.apache.org/licenses/LICENSE-2.0

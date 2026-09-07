@@ -22,7 +22,14 @@ tools/validate/               Go validator (schema + cross-checks), run in CI
 Each `catalog/<model-id>.yaml` supplies everything `flock.types.v1.ModelSpec`
 needs (see the `proto` repo) plus catalog-only metadata:
 
-- **Identity:** `id`, `family`, `params_b`, `context_length`, `embeddings`.
+- **Identity:** `id`, `display_name`, `family`, `params_b` (TOTAL),
+  `context_length`, `embeddings`, and for Mixture-of-Experts models
+  `active_params_b` (parameters active per token) plus `architecture: moe`.
+  The trust engine's timing envelopes key on active params: an MoE
+  without `active_params_b` reads every honest node serving it as
+  impossibly fast, so the validator rejects an MoE manifest (by
+  `architecture: moe` or the `-a<N>b` id suffix) that omits it. Pricing
+  still keys on total params.
 - **License:** real license name/URL/notes. Llama-family models are under the
   Llama Community License — commercial serving is permitted but carries
   attribution/AUP/700M-MAU conditions; a legal pass on the catalog is required
@@ -86,6 +93,8 @@ go run . -root ../.. # what CI runs
 The validator checks every manifest against the JSON Schemas and then
 cross-checks what a schema cannot express: `payout_class` vs `params_b`
 ranges, exact SPEC §7 pricing per class (with the embeddings override),
+`active_params_b` present on Mixture-of-Experts manifests (`architecture:
+moe` or the `-a<N>b` id suffix) and absent on `architecture: dense`,
 `min_vram_mb`/`min_ram_mb` sanity vs artifact size, canonical quant naming and
 quant-name/URL consistency, sha256 shape (real 64-hex or an explicit
 `TODO-verify` — never a plausible-looking fake), fingerprint set references
@@ -99,8 +108,13 @@ set determinism rules (greedy, bounded `max_tokens`, unique prompt ids).
    `https://huggingface.co/api/models/<repo>/tree/main` exposes the LFS
    sha256), or mark them `TODO-verify` — CI accepts the placeholder on
    branches; release policy does not.
-3. Pick the §7 `payout_class` and copy its exact prices.
-4. Assign a `fingerprint_set_id`; ask the control-plane team to generate
+3. Pick the §7 `payout_class` and copy its exact prices (classed by TOTAL
+   `params_b`, MoE included).
+4. Set `architecture: dense | moe`. MoE? Set `active_params_b` (parameters
+   active per token) — the validator refuses an MoE manifest without it,
+   because the trust engine would otherwise flag honest nodes for being
+   "impossibly" fast.
+5. Assign a `fingerprint_set_id`; ask the control-plane team to generate
    expected outputs for every (quant × runtime_build_id) before the model is
    schedulable.
-5. `cd tools/validate && go run . -root ../..` must print `catalog OK`.
+6. `cd tools/validate && go run . -root ../..` must print `catalog OK`.
