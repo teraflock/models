@@ -86,8 +86,9 @@ publishing a new set and flipping `fingerprint_set_id` in the manifests.
 
 ```sh
 cd tools/validate
-go test ./...        # unit + integration (validates the committed catalog)
-go run . -root ../.. # what CI runs
+go test ./...                 # unit + integration (validates the committed catalog)
+go run . -root ../..          # what CI runs on every branch
+go run . -root ../.. -release # what promote.yml runs: TODO-verify is an error
 ```
 
 The validator checks every manifest against the JSON Schemas and then
@@ -101,13 +102,68 @@ quant-name/URL consistency, sha256 shape (real 64-hex or an explicit
 and generation/embedding kind match, filename/id agreement, and fingerprint
 set determinism rules (greedy, bounded `max_tokens`, unique prompt ids).
 
+`-release` adds the publishing gate: every `TODO-verify` (single-file
+sha256, any part, any mmproj) is reported as an issue and `-emit-flat`
+refuses to write. Without `-release` an unverified quant is merely left out
+of the emitted catalog. CI runs the release check on every branch as an
+informational step so a PR can see what would block a tag.
+
+## Publishing
+
+Two objects live on the downloads bucket under
+`https://teraflock-downloads.s3.amazonaws.com/catalog/`, both the flat
+`-emit-flat` document (one `<id>-<quant>` entry per servable artifact):
+
+| object | written by | who reads it |
+|---|---|---|
+| `catalog-staging.json` | every merge to `main` (`ci.yml`, `publish-staging`) | canary / dev nodes: set `models.manifest_url` to it in flockd's config |
+| `catalog.json` | `promote.yml` only, after approval | flockd's default `models.manifest_url` — every fresh install |
+
+Merging to main is therefore not publishing. Quants with `TODO-verify`
+hashes are left out of the staging object; the stable object cannot be
+written at all while any remain (release-mode validation).
+
+### Release: tag → promote → stable
+
+1. Make sure `cd tools/validate && go run . -root ../.. -release` prints
+   `catalog OK` on `main` (the `release readiness` step of the last CI run
+   says the same). If it lists placeholders, fetch the real hashes from the
+   artifact host first — never invent one.
+2. Tag the catalog: `vYYYY.MM.N`, the year/month of the release and a
+   counter within the month (`git tag v2026.09.1 && git push origin
+   v2026.09.1`). The catalog is data, so it is dated rather than
+   semver'd; never move a tag — a fix gets the next `N`.
+3. The tag runs `.github/workflows/promote.yml`, which waits in the
+   `stable` GitHub environment for its required reviewer's approval (the
+   audit trail). The reviewer checklist is at the top of the workflow:
+   nothing unexpected in the added/removed entries, fingerprint expected
+   outputs exist for every new `(model_sha, quant)`, a canary served the
+   staging object, and no pricing moved without a SPEC §7 change.
+4. On approval the job re-runs the tests, validates in release mode, emits
+   `catalog.json`, checks every hash in it is a 64-hex digest, writes the
+   step summary (entries added / removed / hash-changed versus the current
+   stable object), uploads to `catalog/catalog.json` and reads the public
+   URL back to confirm it is byte-equal.
+
+Rolling back is the same workflow run manually (Actions → **promote** →
+*Run workflow*, or `gh workflow run promote.yml --repo teraflock/models
+--ref v2026.09.1`) on the previous tag. The uploader credentials are
+write-only on the bucket; both workflows read the objects back over the
+public URL.
+
+Consumers that do **not** go through these objects: the control plane's
+registry reads `catalog/` straight from a checkout
+(`FLOCK_REGISTRY__CATALOG_PATH`), so its view of the catalog is whatever
+ref it was deployed from, not the stable object.
+
 ## Adding a model
 
 1. Create `catalog/<model-id>.yaml` (copy a neighbor of the same class).
 2. Pull real `sha256`/`size_bytes` from the artifact host (for Hugging Face:
    `https://huggingface.co/api/models/<repo>/tree/main` exposes the LFS
    sha256), or mark them `TODO-verify` — CI accepts the placeholder on
-   branches; release policy does not.
+   branches and main (the quant is left out of the staging object);
+   `promote.yml` refuses to write the stable object while any remain.
 3. Pick the §7 `payout_class` and copy its exact prices (classed by TOTAL
    `params_b`, MoE included).
 4. Set `architecture: dense | moe`. MoE? Set `active_params_b` (parameters

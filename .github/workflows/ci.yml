@@ -1,5 +1,11 @@
 name: ci
 
+# Validate on every PR and main push; publish the STAGING catalog object on
+# main. The stable object (catalog/catalog.json, flockd's default
+# models.manifest_url — every fresh install) is only written by promote.yml,
+# after a release-mode validation and the `stable` environment's approval.
+# See README "Publishing".
+
 on:
   push:
     branches: [main]
@@ -35,12 +41,42 @@ jobs:
         working-directory: tools/validate
         run: go run . -root ../..
 
-  publish:
-    # The hosted node catalog: flockd's default models.manifest_url points
-    # at this object, so merging to main is publishing.
+      - name: release readiness (informational)
+        # Branches may carry TODO-verify placeholders (CLAUDE.md rule 3:
+        # never invent a hash). This step shows what promote.yml would
+        # reject today without blocking the PR.
+        working-directory: tools/validate
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if go run . -root ../.. -release 2> release.log; then
+            echo "release-ready: no TODO-verify placeholders" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Not release-ready"
+              echo
+              echo "promote.yml would reject this tree; fetch the real hashes from the artifact host before tagging:"
+              echo
+              echo '```'
+              cat release.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            cat release.log
+            exit 1
+          fi
+
+  publish-staging:
+    # The staging catalog: nothing reads it by default. Canary / dev nodes
+    # opt in by pointing flockd's models.manifest_url at it (README,
+    # "Publishing"). Quants with TODO-verify hashes are left out here, as
+    # they always were; the stable object additionally refuses to be
+    # written while any remain (promote.yml).
     needs: validate
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    concurrency:
+      group: publish-staging
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -49,12 +85,17 @@ jobs:
           cache-dependency-path: tools/validate/go.sum
       - name: emit flat catalog
         working-directory: tools/validate
-        run: go run . -root ../.. -emit-flat ../../catalog.json
-      - name: upload to the downloads bucket
+        run: go run . -root ../.. -emit-flat ../../catalog-staging.json
+      - name: upload the staging object
+        # teraflock-ci-uploader credentials: write-only on teraflock-downloads.
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
-          aws s3 cp catalog.json s3://teraflock-downloads/catalog/catalog.json \
-            --content-type application/json
+          set -euo pipefail
+          aws s3 cp catalog-staging.json \
+            s3://teraflock-downloads/catalog/catalog-staging.json \
+            --content-type application/json \
+            --metadata "git-commit=${GITHUB_SHA},git-ref=${GITHUB_REF_NAME}"
+          echo "- staging: $(jq '.models | length' catalog-staging.json) (model, quant) entries from ${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"

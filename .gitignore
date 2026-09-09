@@ -10,3 +10,7 @@ tools/validate/validate
 *.swp
 .idea/
 .vscode/
+
+# Flat catalogs emitted by -emit-flat (CI uploads them; never commit).
+/catalog.json
+/catalog-staging.json
