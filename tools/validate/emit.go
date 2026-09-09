@@ -44,7 +44,14 @@ type flatModel struct {
 // artifact it cannot verify. For sharded quants that means every part (and
 // the mmproj sidecar, if declared) must be pinned; a quant with one
 // unverified part is skipped whole rather than emitted without it.
-func EmitFlat(root string) ([]byte, error) {
+func EmitFlat(root string) ([]byte, error) { return EmitFlatWith(root, Options{}) }
+
+// EmitFlatWith is EmitFlat with Options. In release mode an unverified
+// quant is not skipped but fatal: the release catalog is all-or-nothing,
+// so a placeholder can never silently shrink what production serves. (Run
+// in release mode already reports the same placeholders; this is the
+// second lock on the same door.)
+func EmitFlatWith(root string, opts Options) ([]byte, error) {
 	files, err := filepath.Glob(filepath.Join(root, "catalog", "*.yaml"))
 	if err != nil {
 		return nil, err
@@ -62,6 +69,9 @@ func EmitFlat(root string) ([]byte, error) {
 		}
 		for _, q := range m.Quants {
 			if !quantVerified(q) {
+				if opts.Release {
+					return nil, fmt.Errorf("%s: quant %s has an unverified hash — a release catalog cannot carry %s", f, q.Quant, shaPlaceholder)
+				}
 				continue
 			}
 			fm := flatModel{

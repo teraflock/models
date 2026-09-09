@@ -5,6 +5,10 @@
 // vs artifact URL, fingerprint set references).
 //
 // Usage: go run . -root ../..
+//
+// With -release every TODO-verify placeholder is an error (and -emit-flat
+// refuses to write): that is the mode the promote workflow runs before
+// writing catalog/catalog.json, the object every fresh flockd install reads.
 package main
 
 import (
@@ -16,9 +20,11 @@ import (
 func main() {
 	root := flag.String("root", ".", "path to the models repo root")
 	emitFlat := flag.String("emit-flat", "", "after validating, write the flat flockd-format catalog JSON here")
+	release := flag.Bool("release", false, "release mode: reject every TODO-verify placeholder (required before publishing catalog/catalog.json)")
 	flag.Parse()
 
-	issues, err := Run(*root)
+	opts := Options{Release: *release}
+	issues, err := RunWith(*root, opts)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "validate: %v\n", err)
 		os.Exit(2)
@@ -33,7 +39,7 @@ func main() {
 	fmt.Println("catalog OK")
 
 	if *emitFlat != "" {
-		buf, err := EmitFlat(*root)
+		buf, err := EmitFlatWith(*root, opts)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "emit-flat: %v\n", err)
 			os.Exit(2)

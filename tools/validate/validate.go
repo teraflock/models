@@ -181,7 +181,21 @@ func looksMoE(m Manifest) bool {
 // Run validates the whole repo rooted at root and returns human-readable
 // issues. A non-nil error means the repo could not be validated at all
 // (missing schema, unreadable dirs); issues mean the content is wrong.
-func Run(root string) ([]string, error) {
+func Run(root string) ([]string, error) { return RunWith(root, Options{}) }
+
+// Options selects what RunWith enforces beyond the always-on checks.
+type Options struct {
+	// Release additionally rejects every TODO-verify placeholder. Branch
+	// validation accepts the placeholder because a hash must never be
+	// invented (a real one comes from the artifact host or not at all);
+	// the release catalog — catalog/catalog.json, read by every fresh
+	// install — must only carry artifacts a node can verify, so a
+	// placeholder anywhere is a hard failure there.
+	Release bool
+}
+
+// RunWith is Run with Options; see Options.Release for the release gate.
+func RunWith(root string, opts Options) ([]string, error) {
 	var issues []string
 
 	manifestSchema, err := compileSchema(filepath.Join(root, "schema", "manifest.schema.json"))
@@ -262,8 +276,44 @@ func Run(root string) ([]string, error) {
 		for _, is := range CheckManifest(m, sets) {
 			issues = append(issues, fmt.Sprintf("%s: %s", path, is))
 		}
+		if opts.Release {
+			rel := ReleaseIssues(m)
+			// Catch-all for a placeholder the struct walk cannot see (a
+			// field the Manifest type does not decode): the literal must
+			// not survive into a release in any position.
+			if len(rel) == 0 && strings.Contains(string(raw), shaPlaceholder) {
+				rel = append(rel, fmt.Sprintf("release: %q appears outside a sha256 field", shaPlaceholder))
+			}
+			for _, is := range rel {
+				issues = append(issues, fmt.Sprintf("%s: %s", path, is))
+			}
+		}
 	}
 	return issues, nil
+}
+
+// ReleaseIssues lists every placeholder that keeps a manifest out of a
+// release: a TODO-verify sha256 on a single-file quant, on any part, or on
+// an mmproj sidecar. It reports position, never the surrounding data, so a
+// failing release run tells the author exactly which hashes to fetch from
+// the artifact host.
+func ReleaseIssues(m Manifest) []string {
+	var issues []string
+	for _, q := range m.Quants {
+		pfx := fmt.Sprintf("release: quant %s", q.Quant)
+		if len(q.Parts) == 0 && q.SHA256 == shaPlaceholder {
+			issues = append(issues, fmt.Sprintf("%s: sha256 is %q — fetch the real hash before releasing", pfx, shaPlaceholder))
+		}
+		for i, p := range q.Parts {
+			if p.SHA256 == shaPlaceholder {
+				issues = append(issues, fmt.Sprintf("%s: parts[%d] (%s) sha256 is %q — fetch the real hash before releasing", pfx, i, path.Base(p.URL), shaPlaceholder))
+			}
+		}
+		if q.Mmproj != nil && q.Mmproj.SHA256 == shaPlaceholder {
+			issues = append(issues, fmt.Sprintf("%s: mmproj sha256 is %q — fetch the real hash before releasing", pfx, shaPlaceholder))
+		}
+	}
+	return issues
 }
 
 // CheckManifest runs all cross-checks that the JSON Schema cannot express.
