@@ -31,12 +31,19 @@ type flatModel struct {
 	PayoutClass   string  `json:"payout_class"`
 	ContextLength int     `json:"context_length"`
 	Embeddings    bool    `json:"embeddings"`
+	// Parts is set for sharded artifacts (then ArtifactURL is empty and
+	// SHA256 is the composite id, CompositeSHA256); Mmproj is the optional
+	// vision projector sidecar. Both mirror flock.types.v1.ModelSpec.
+	Parts  []Part `json:"parts,omitempty"`
+	Mmproj *Part  `json:"mmproj,omitempty"`
 }
 
 // EmitFlat renders catalog/*.yaml as the flat JSON document published to
 // the downloads bucket for nodes (models.manifest_url). Quants whose
 // sha256 is still TODO-verify are skipped — a node must never be handed an
-// artifact it cannot verify.
+// artifact it cannot verify. For sharded quants that means every part (and
+// the mmproj sidecar, if declared) must be pinned; a quant with one
+// unverified part is skipped whole rather than emitted without it.
 func EmitFlat(root string) ([]byte, error) {
 	files, err := filepath.Glob(filepath.Join(root, "catalog", "*.yaml"))
 	if err != nil {
@@ -54,10 +61,10 @@ func EmitFlat(root string) ([]byte, error) {
 			return nil, fmt.Errorf("%s: %w", f, err)
 		}
 		for _, q := range m.Quants {
-			if !sha256RE.MatchString(q.SHA256) {
+			if !quantVerified(q) {
 				continue
 			}
-			out = append(out, flatModel{
+			fm := flatModel{
 				ID:            m.ID + "-" + lowerQuant(q.Quant),
 				DisplayName:   m.DisplayName + " · " + q.Quant,
 				Family:        m.Family,
@@ -72,13 +79,40 @@ func EmitFlat(root string) ([]byte, error) {
 				PayoutClass:   m.PayoutClass,
 				ContextLength: m.ContextLength,
 				Embeddings:    m.Embeddings,
-			})
+				Mmproj:        q.Mmproj,
+			}
+			if len(q.Parts) > 0 {
+				fm.Parts = q.Parts
+				fm.SHA256 = CompositeSHA256(q.Parts)
+			}
+			out = append(out, fm)
 		}
 	}
 	if len(out) == 0 {
 		return nil, fmt.Errorf("no verifiable quants found under %s/catalog", root)
 	}
 	return json.MarshalIndent(map[string]any{"models": out}, "", "  ")
+}
+
+// quantVerified reports whether every hash a node would need to check is
+// real: the single-file sha256, or every part's, plus the mmproj's if one
+// is declared.
+func quantVerified(q Quant) bool {
+	if len(q.Parts) == 0 {
+		if !sha256RE.MatchString(q.SHA256) {
+			return false
+		}
+	} else {
+		for _, p := range q.Parts {
+			if !sha256RE.MatchString(p.SHA256) {
+				return false
+			}
+		}
+	}
+	if q.Mmproj != nil && !sha256RE.MatchString(q.Mmproj.SHA256) {
+		return false
+	}
+	return true
 }
 
 func lowerQuant(q string) string {

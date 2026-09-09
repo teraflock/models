@@ -103,14 +103,28 @@
   "$defs": {
     "quant": {
       "type": "object",
+      "description": "One servable quantization. Exactly one of (artifact_url + sha256) for a single-file GGUF or parts for a sharded one (oneOf below). size_bytes is always the total download size: the single file, or the sum of parts (never including mmproj).",
       "required": [
         "quant",
-        "artifact_url",
-        "sha256",
         "size_bytes",
         "min_vram_mb",
         "min_ram_mb",
         "tok_s_estimates"
+      ],
+      "oneOf": [
+        {
+          "required": ["artifact_url", "sha256"],
+          "not": { "required": ["parts"] }
+        },
+        {
+          "required": ["parts"],
+          "not": {
+            "anyOf": [
+              { "required": ["artifact_url"] },
+              { "required": ["sha256"] }
+            ]
+          }
+        }
       ],
       "additionalProperties": false,
       "properties": {
@@ -123,16 +137,34 @@
           "type": "string",
           "format": "uri",
           "pattern": "\\.gguf$",
-          "description": "Direct download URL of the GGUF artifact (single-file quants only in v1)."
+          "description": "Direct download URL of a single-file GGUF artifact. Sharded releases (-NNNNN-of-NNNNN.gguf) use parts instead; listing shard 1 here is rejected by the validator."
         },
         "sha256": {
           "type": "string",
           "pattern": "^([0-9a-f]{64}|TODO-verify)$",
-          "description": "SHA-256 of the artifact. flockd refuses to serve on mismatch (SPEC §6). 'TODO-verify' is permitted only while a manifest is in draft; CI policy may reject it on release branches."
+          "description": "SHA-256 of the single-file artifact. flockd refuses to serve on mismatch (SPEC §6). 'TODO-verify' is permitted only while a manifest is in draft; CI policy may reject it on release branches. Absent for multi-part quants: their composite id (sha256 over the concatenated part hashes, see the proto design note 2026-09-08-sharded-artifacts) is derived by the emitter and the registry, never hand-written."
         },
         "size_bytes": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "Total download size in bytes: the single file, or the sum of parts (the validator enforces equality). mmproj is not included."
+        },
+        "parts": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/part" },
+          "description": "Sharded GGUF, one entry per shard in llama.cpp series order: basenames <name>-00001-of-0000N.gguf .. <name>-0000N-of-0000N.gguf, same directory, exactly N entries. Every part is pinned like a single-file artifact; flockd stores them as sibling files under their upstream basenames so llama.cpp discovers the series from part 1."
+        },
+        "mmproj": {
+          "allOf": [
+            { "$ref": "#/$defs/part" },
+            {
+              "properties": {
+                "url": { "pattern": "mmproj[^/]*\\.gguf$" }
+              }
+            }
+          ],
+          "description": "Optional vision projector sidecar (mmproj-*.gguf) for vision-language releases, passed to llama-server --mmproj. Projectors are per-precision upstream (mmproj-F16.gguf, mmproj-BF16.gguf), hence per quant. Same pinning rules as a part; not counted in size_bytes."
         },
         "min_vram_mb": {
           "type": "integer",
@@ -160,6 +192,29 @@
           }
         },
         "notes": { "type": "string" }
+      }
+    },
+    "part": {
+      "type": "object",
+      "required": ["url", "sha256", "size_bytes"],
+      "additionalProperties": false,
+      "description": "One pinned file of a multi-file artifact. Field names match flock.types.v1.ArtifactPart.",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "\\.gguf$",
+          "description": "Direct download URL; the basename is what flockd writes to disk."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{64}|TODO-verify)$",
+          "description": "SHA-256 of this file (HF tree API: lfs.oid). 'TODO-verify' only while in draft."
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "envelope": {
