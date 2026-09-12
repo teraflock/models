@@ -31,8 +31,9 @@ func validManifest() Manifest {
 		PayoutClass:   "small",
 		ContextLength: 131072,
 		FingerprintID: "fp-gen-v1",
-		BasePayout:    0.055,
-		CustomerPrice: 0.10,
+		PriceIn:       0.018,
+		PriceOut:      0.036,
+		PayoutShare:   0.45,
 		SourceRepo:    "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
 		Quants:        []Quant{validQuant()},
 	}
@@ -48,6 +49,13 @@ func validQuant() Quant {
 		MinRAMMB:    8192,
 		TokS:        map[string]Envelope{"rtx-4090": {Min: 90, Max: 140}},
 	}
+}
+
+// priceAs copies the SPEC §7 row for class onto m, the way a manifest
+// author is told to.
+func priceAs(m *Manifest, class string) {
+	p := classPricing[class]
+	m.PriceIn, m.PriceOut, m.PayoutShare = p.In, p.Out, p.Share
 }
 
 var testSets = map[string]FingerprintSet{
@@ -91,8 +99,7 @@ func TestPayoutClassVsParams(t *testing.T) {
 		m := validManifest()
 		m.PayoutClass = c.class
 		m.ParamsB = c.paramsB
-		p := classPricing[c.class]
-		m.BasePayout, m.CustomerPrice = p[0], p[1]
+		priceAs(&m, c.class)
 		issues := CheckManifest(m, testSets)
 		var mismatch bool
 		for _, is := range issues {
@@ -111,14 +118,18 @@ func TestPayoutClassVsParams(t *testing.T) {
 
 func TestPricingTable(t *testing.T) {
 	m := validManifest()
-	m.CustomerPrice = 0.25 // not the §7 small price
+	m.PriceOut = 0.25 // not the §7 small price
 	assertIssue(t, CheckManifest(m, testSets), "does not match §7 table")
 
 	m = validManifest()
-	m.BasePayout = 0.20 // above customer price and off-table
+	m.PriceIn = 0.02 // input price off-table too
+	assertIssue(t, CheckManifest(m, testSets), "does not match §7 table")
+
+	m = validManifest()
+	m.PayoutShare = 1.2 // off-table and not a share
 	issues := CheckManifest(m, testSets)
 	assertIssue(t, issues, "does not match §7 table")
-	assertIssue(t, issues, "must be below customer_price_per_mtok")
+	assertIssue(t, issues, "must be strictly between 0 and 1")
 }
 
 func TestEmbeddingsPricingOverride(t *testing.T) {
@@ -128,12 +139,12 @@ func TestEmbeddingsPricingOverride(t *testing.T) {
 	m.PayoutClass = "nano"
 	m.Embeddings = true
 	m.FingerprintID = "fp-embed-v1"
-	m.BasePayout, m.CustomerPrice = 0.0055, 0.01
+	m.PriceIn, m.PriceOut, m.PayoutShare = 0.004, 0.004, 0.50
 	if issues := CheckManifest(m, testSets); len(issues) != 0 {
 		t.Fatalf("unexpected issues: %v", issues)
 	}
 	// Class-table pricing on an embeddings model must fail.
-	m.BasePayout, m.CustomerPrice = 0.022, 0.04
+	priceAs(&m, "nano")
 	assertIssue(t, CheckManifest(m, testSets), "does not match §7 table")
 }
 
@@ -242,7 +253,7 @@ func TestMoERequiresActiveParams(t *testing.T) {
 		m.SourceRepo = "https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF"
 		m.ParamsB = 36
 		m.PayoutClass = "mid"
-		m.BasePayout, m.CustomerPrice = classPricing["mid"][0], classPricing["mid"][1]
+		priceAs(&m, "mid")
 		return m
 	}
 
@@ -266,7 +277,7 @@ func TestMoERequiresActiveParams(t *testing.T) {
 	g.SourceRepo = "https://huggingface.co/ggml-org/gpt-oss-20b-GGUF"
 	g.ParamsB = 20.9
 	g.PayoutClass = "mid"
-	g.BasePayout, g.CustomerPrice = classPricing["mid"][0], classPricing["mid"][1]
+	priceAs(&g, "mid")
 	if issues := CheckManifest(g, testSets); len(issues) != 0 {
 		t.Fatalf("no signal, no field: the heuristic must stay quiet, got %v", issues)
 	}
@@ -353,5 +364,46 @@ func TestRunFlagsMoEManifestWithoutActiveParams(t *testing.T) {
 		if !strings.Contains(is, "Mixture-of-Experts") {
 			t.Errorf("unexpected extra issue: %s", is)
 		}
+	}
+}
+
+// unsloth UD-* dynamic quants are a per-model exception (docs#38): the
+// name is accepted, but only from an unsloth source_repo and only at
+// UD-Q4 or above.
+func TestUDQuantRules(t *testing.T) {
+	ud := func(name string) Manifest {
+		m := validManifest()
+		m.ID = "deepseek-v4-flash-0731"
+		m.ParamsB = 284
+		m.ActiveParamsB = 13
+		m.Architecture = "moe"
+		m.PayoutClass = "xl"
+		priceAs(&m, "xl")
+		m.SourceRepo = "https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF"
+		q := validQuant()
+		q.Quant = name
+		q.ArtifactURL = "https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/DeepSeek-V4-Flash-0731-" + name + ".gguf"
+		q.SizeBytes = 155_000_000_000
+		q.MinVRAMMB = 172032
+		q.MinRAMMB = 212992
+		m.Quants = []Quant{q}
+		return m
+	}
+	if issues := CheckManifest(ud("UD-Q4_K_XL"), testSets); len(issues) != 0 {
+		t.Fatalf("UD-Q4_K_XL from unsloth: unexpected issues %v", issues)
+	}
+	assertIssue(t, CheckManifest(ud("UD-Q2_K_XL"), testSets), "below the UD-Q4 quality floor")
+	assertIssue(t, CheckManifest(ud("UD-Q3_K_XL"), testSets), "below the UD-Q4 quality floor")
+
+	m := ud("UD-Q4_K_XL")
+	m.SourceRepo = "https://huggingface.co/ggml-org/DeepSeek-V4-Flash-0731-GGUF"
+	assertIssue(t, CheckManifest(m, testSets), "must come from an unsloth/* source_repo")
+
+	// Standard-named quants are untouched by the UD rules.
+	if issues := CheckQuant(validQuant()); len(issues) != 0 {
+		t.Fatalf("standard quant: %v", issues)
+	}
+	if issues := CheckQuant(Quant{Quant: "UD-IQ2_XXS"}); len(issues) == 0 {
+		t.Fatal("UD-IQ* names are not on the whitelist")
 	}
 }

@@ -17,8 +17,9 @@ payout_class: nano
 context_length: 131072
 embeddings: false
 fingerprint_set_id: fp-gen-v1
-base_payout_rate: 0.022 # USD per Mtok, ~55% of customer price (SPEC §7)
-customer_price_per_mtok: 0.04
+price_in_per_mtok: 0.014 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12)
+price_out_per_mtok: 0.03
+payout_share: 0.40 # share of the charge paid to the node
 source_repo: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF
 quants:
   - quant: Q4_K_M

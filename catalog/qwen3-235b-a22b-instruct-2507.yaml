@@ -1,0 +1,47 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API
+# (unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF, tree/main/Q4_K_M), 2026-09-12.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 235B total / 22B active — the first xl-class entry (SPEC §7): 256GB+
+# unified memory only (M3 Ultra Mac Studio class). Three standard-named
+# Q4_K_M shards. No ggml-org or first-party GGUF of this release exists, so
+# the shards come from unsloth's repo — the standard llama.cpp recipe, not a
+# UD-* dynamic quant — and are hash-pinned like everything else. Classed
+# (and priced) by TOTAL params like every MoE entry.
+id: qwen3-235b-a22b-instruct-2507
+display_name: Qwen3 235B A22B Instruct 2507
+family: qwen3
+params_b: 235
+active_params_b: 22
+architecture: moe
+license:
+  name: Apache-2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: xl
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v2
+price_in_per_mtok: 0.3 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12)
+price_out_per_mtok: 0.97
+payout_share: 0.75 # share of the charge paid to the node
+source_repo: https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF
+quants:
+  - quant: Q4_K_M
+    parts:
+      - url: https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF/resolve/main/Q4_K_M/Qwen3-235B-A22B-Instruct-2507-Q4_K_M-00001-of-00003.gguf
+        sha256: 5dc744396d0b116215e0b97fbfb74b3e0945f24857ba976c258e4edd15eed558
+        size_bytes: 49944699040
+      - url: https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF/resolve/main/Q4_K_M/Qwen3-235B-A22B-Instruct-2507-Q4_K_M-00002-of-00003.gguf
+        sha256: a9a9213792b6f56663cab014b958909c986cafd8ba59c1fef9257858dc879683
+        size_bytes: 49930349824
+      - url: https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF/resolve/main/Q4_K_M/Qwen3-235B-A22B-Instruct-2507-Q4_K_M-00003-of-00003.gguf
+        sha256: b12aa8ceb940f0ccfd3aa00dbbe6d2faf3792185758a1cad08f8ffba2124d8bc
+        size_bytes: 42279026016
+    size_bytes: 142154074880 # sum of the parts
+    min_vram_mb: 155648
+    min_ram_mb: 196608
+    tok_s_estimates: # estimates (22B active decode, memory-bandwidth bound)
+      m3-ultra: { min: 15, max: 35 }
+      cpu-avx2: { min: 1, max: 4 }

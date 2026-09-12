@@ -35,9 +35,13 @@ needs (see the `proto` repo) plus catalog-only metadata:
   attribution/AUP/700M-MAU conditions; a legal pass on the catalog is required
   before commercial launch (SPEC §13.2). Everything else in the current
   catalog is Apache-2.0.
-- **Economics:** `payout_class` (nano/small/mid/large) and the SPEC §7 prices:
-  `customer_price_per_mtok` and `base_payout_rate` (USD per million tokens,
-  payout ≈ 55% of price). Embedding models are priced separately (~$0.01/Mtok).
+- **Economics:** `payout_class` (nano/small/mid/large/xl, by TOTAL params)
+  and the SPEC §7 row for it, copied verbatim: `price_in_per_mtok` and
+  `price_out_per_mtok` (interactive USD per million input / output tokens;
+  batch is 0.5× of both) and `payout_share` (the share of the charge paid to
+  the serving node, rising with hardware scarcity). Embedding models carry
+  their own row (input tokens only). The validator rejects any value off the
+  table — prices change in the SPEC first, then here.
 - **Per-quant artifacts:** `quant` (canonical llama.cpp name), `artifact_url`
   (real upstream GGUF URL; production nodes fetch through our HF-proxying CDN),
   `sha256` + `size_bytes` (verified against the upstream host; `flockd` refuses
@@ -164,8 +168,9 @@ ref it was deployed from, not the stable object.
    sha256), or mark them `TODO-verify` — CI accepts the placeholder on
    branches and main (the quant is left out of the staging object);
    `promote.yml` refuses to write the stable object while any remain.
-3. Pick the §7 `payout_class` and copy its exact prices (classed by TOTAL
-   `params_b`, MoE included).
+3. Pick the §7 `payout_class` and copy its exact row — `price_in_per_mtok`,
+   `price_out_per_mtok`, `payout_share` (classed by TOTAL `params_b`, MoE
+   included).
 4. Set `architecture: dense | moe`. MoE? Set `active_params_b` (parameters
    active per token) — the validator refuses an MoE manifest without it,
    because the trust engine would otherwise flag honest nodes for being
@@ -174,6 +179,16 @@ ref it was deployed from, not the stable object.
    expected outputs for every (quant × runtime_build_id) before the model is
    schedulable.
 6. `cd tools/validate && go run . -root ../..` must print `catalog OK`.
+
+### Quant names and publishers
+
+`quant` is a canonical llama.cpp name (`Q4_K_M`, `IQ4_XS`, `MXFP4`, `F16`,
+…) and ggml-org / first-party repos are the default source. unsloth
+`UD-*` dynamic quants (`UD-Q4_K_XL` …) are accepted **per model only where
+no reputable standard-named quant exists**, with the reason in the
+manifest's header comment; such a manifest must have an `unsloth/*`
+`source_repo`, and only `UD-Q4` and above are allowed — the class price
+buys class quality, and sub-Q4 dynamic quants are measurably worse.
 
 ### Multi-part artifacts and vision sidecars
 

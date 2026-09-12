@@ -32,10 +32,13 @@ type Manifest struct {
 	ContextLength int     `yaml:"context_length"`
 	Embeddings    bool    `yaml:"embeddings"`
 	FingerprintID string  `yaml:"fingerprint_set_id"`
-	BasePayout    float64 `yaml:"base_payout_rate"`
-	CustomerPrice float64 `yaml:"customer_price_per_mtok"`
-	SourceRepo    string  `yaml:"source_repo"`
-	Quants        []Quant `yaml:"quants"`
+	// Pricing is USD per million tokens, split input/output, plus the share
+	// of the charge paid to the node — all fixed per class by SPEC §7.
+	PriceIn     float64 `yaml:"price_in_per_mtok"`
+	PriceOut    float64 `yaml:"price_out_per_mtok"`
+	PayoutShare float64 `yaml:"payout_share"`
+	SourceRepo  string  `yaml:"source_repo"`
+	Quants      []Quant `yaml:"quants"`
 }
 
 type License struct {
@@ -101,19 +104,26 @@ type FPPrompt struct {
 	MaxTokens int    `yaml:"max_tokens"`
 }
 
-// classPricing is the SPEC §7 table: payout_class -> (base_payout_rate,
-// customer_price_per_mtok) in USD per million tokens.
-var classPricing = map[string][2]float64{
-	"nano":  {0.022, 0.04},
-	"small": {0.055, 0.10},
-	"mid":   {0.165, 0.30},
-	"large": {0.385, 0.70},
-	"xl":    {1.10, 2.00}, // added with SPEC §7 xl row, 2026-08-30
+// pricing is one SPEC §7 row: interactive USD per million input and
+// output tokens, and the share of the charge paid to the node. Batch is
+// 0.5× of both prices and is not a manifest field.
+type pricing struct {
+	In, Out float64
+	Share   float64
+}
+
+// classPricing is the SPEC §7 table (2026-09-12) keyed by payout_class.
+var classPricing = map[string]pricing{
+	"nano":  {0.014, 0.030, 0.40},
+	"small": {0.018, 0.036, 0.45},
+	"mid":   {0.075, 0.29, 0.65},
+	"large": {0.105, 0.34, 0.72},
+	"xl":    {0.30, 0.97, 0.75},
 }
 
 // embeddingPricing overrides the class table for embeddings-flagged models
-// ("embeddings priced separately (~$0.01)", SPEC §7).
-var embeddingPricing = [2]float64{0.0055, 0.01}
+// (SPEC §7: embeddings are priced on input tokens; they produce none).
+var embeddingPricing = pricing{0.004, 0.004, 0.50}
 
 // classParamBounds validates payout_class against params_b (billions):
 // nano ≤3.5, small (3.5,9], mid (9,40], large (40,150], xl >150.
@@ -130,8 +140,13 @@ var classParamBounds = map[string][2]float64{
 
 var (
 	// MXFP4 is gpt-oss's native (and only meaningful) quantization.
-	quantNameRE = regexp.MustCompile(`^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|MXFP4|F16|BF16|F32)$`)
-	sha256RE    = regexp.MustCompile(`^[0-9a-f]{64}$`)
+	// UD-* are unsloth's dynamic quants, accepted per model where no
+	// reputable standard-named quant exists (docs#38): the manifest must
+	// then source from unsloth and sit at UD-Q4 or above (see CheckManifest).
+	quantNameRE = regexp.MustCompile(`^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|UD-Q[2-8]_K_(S|M|L|XL)|MXFP4|F16|BF16|F32)$`)
+	// udQuantRE splits an accepted UD-* name into its bit width.
+	udQuantRE = regexp.MustCompile(`^UD-Q([2-8])_K_`)
+	sha256RE  = regexp.MustCompile(`^[0-9a-f]{64}$`)
 )
 
 const shaPlaceholder = "TODO-verify"
@@ -359,18 +374,35 @@ func CheckManifest(m Manifest, sets map[string]FingerprintSet) []string {
 			"the trust engine's timing envelopes will misjudge honest nodes — add active_params_b (and architecture: moe)")
 	}
 
-	// Pricing table (SPEC §7).
+	// Pricing table (SPEC §7): input and output price and the payout share
+	// are fixed per class; a manifest copies them, never sets them.
 	want := classPricing[m.PayoutClass]
 	if m.Embeddings {
 		want = embeddingPricing
 	}
-	if !almostEq(m.BasePayout, want[0]) || !almostEq(m.CustomerPrice, want[1]) {
+	if !almostEq(m.PriceIn, want.In) || !almostEq(m.PriceOut, want.Out) || !almostEq(m.PayoutShare, want.Share) {
 		issues = append(issues, fmt.Sprintf(
-			"pricing (payout=%g, price=%g) does not match §7 table for class %q embeddings=%v (want payout=%g, price=%g)",
-			m.BasePayout, m.CustomerPrice, m.PayoutClass, m.Embeddings, want[0], want[1]))
+			"pricing (in=%g, out=%g, payout_share=%g) does not match §7 table for class %q embeddings=%v (want in=%g, out=%g, payout_share=%g)",
+			m.PriceIn, m.PriceOut, m.PayoutShare, m.PayoutClass, m.Embeddings, want.In, want.Out, want.Share))
 	}
-	if m.BasePayout >= m.CustomerPrice {
-		issues = append(issues, fmt.Sprintf("base_payout_rate %g must be below customer_price_per_mtok %g", m.BasePayout, m.CustomerPrice))
+	if m.PayoutShare <= 0 || m.PayoutShare >= 1 {
+		issues = append(issues, fmt.Sprintf("payout_share %g must be strictly between 0 and 1", m.PayoutShare))
+	}
+
+	// unsloth UD-* dynamic quants (docs#38): a per-model exception where no
+	// reputable standard-named quant exists — sourced from unsloth, and at
+	// UD-Q4 or above so the class price buys class quality.
+	for _, q := range m.Quants {
+		ud := udQuantRE.FindStringSubmatch(q.Quant)
+		if ud == nil {
+			continue
+		}
+		if !strings.HasPrefix(strings.ToLower(m.SourceRepo), "https://huggingface.co/unsloth/") {
+			issues = append(issues, fmt.Sprintf("quant %s: UD-* dynamic quants must come from an unsloth/* source_repo (got %q)", q.Quant, m.SourceRepo))
+		}
+		if bits, _ := strconv.Atoi(ud[1]); bits < 4 {
+			issues = append(issues, fmt.Sprintf("quant %s: below the UD-Q4 quality floor — sub-Q4 dynamic quants are not sold at the class price", q.Quant))
+		}
 	}
 
 	// Fingerprint set reference + kind match.

@@ -14,8 +14,9 @@
     "context_length",
     "embeddings",
     "fingerprint_set_id",
-    "base_payout_rate",
-    "customer_price_per_mtok",
+    "price_in_per_mtok",
+    "price_out_per_mtok",
+    "payout_share",
     "source_repo",
     "quants"
   ],
@@ -79,15 +80,21 @@
       "type": "string",
       "description": "Id of a challenge prompt set in fingerprints/prompts/<set-id>.yaml. Expected outputs live in the private control-plane repo, keyed by (model_sha, quant, runtime_build_id)."
     },
-    "base_payout_rate": {
+    "price_in_per_mtok": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Node payout in USD per million tokens (prompt+completion), before multipliers. ~55% of customer price per SPEC §7."
+      "description": "Interactive customer price in USD per million input (prompt) tokens; batch is 0.5×. Fixed per payout_class by SPEC §7 — copy, never set."
     },
-    "customer_price_per_mtok": {
+    "price_out_per_mtok": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Customer price in USD per million tokens (prompt+completion)."
+      "description": "Interactive customer price in USD per million output (completion) tokens; batch is 0.5×. Fixed per payout_class by SPEC §7."
+    },
+    "payout_share": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1,
+      "description": "Share of the customer charge (input and output) paid to the serving node before multipliers; rises with hardware scarcity per SPEC §7 (0.40 nano → 0.75 xl)."
     },
     "source_repo": {
       "type": "string",
@@ -130,7 +137,7 @@
       "properties": {
         "quant": {
           "type": "string",
-          "pattern": "^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|MXFP4|F16|BF16|F32)$",
+          "pattern": "^(Q[2-8]_(0|1|K_S|K_M|K_L)|IQ[1-4]_(XXS|XS|S|M|NL)|UD-Q[2-8]_K_(S|M|L|XL)|MXFP4|F16|BF16|F32)$",
           "description": "llama.cpp quantization name, canonical upper-case form."
         },
         "artifact_url": {

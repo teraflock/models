@@ -12,8 +12,9 @@ payout_class: nano # hardware-tier class; embeddings are priced separately (SPEC
 context_length: 8192
 embeddings: true
 fingerprint_set_id: fp-embed-v1
-base_payout_rate: 0.0055 # USD per Mtok; embeddings priced separately (~$0.01 customer, SPEC §7)
-customer_price_per_mtok: 0.01
+price_in_per_mtok: 0.004 # USD per Mtok, SPEC §7 (2026-09-12); embeddings bill input tokens only
+price_out_per_mtok: 0.004
+payout_share: 0.50 # share of the charge paid to the node
 source_repo: https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF
 quants:
   - quant: Q8_0

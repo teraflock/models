@@ -20,8 +20,9 @@ payout_class: mid
 context_length: 262144
 embeddings: false
 fingerprint_set_id: fp-gen-v1
-base_payout_rate: 0.165 # USD per Mtok, ~55% of customer price (SPEC §7)
-customer_price_per_mtok: 0.30
+price_in_per_mtok: 0.075 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12)
+price_out_per_mtok: 0.29
+payout_share: 0.65 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF
 quants:
   - quant: Q4_K_M

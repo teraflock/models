@@ -203,8 +203,9 @@ payout_class: large
 context_length: 32768
 embeddings: false
 fingerprint_set_id: fp-gen-v1
-base_payout_rate: 0.385
-customer_price_per_mtok: 0.70
+price_in_per_mtok: 0.105
+price_out_per_mtok: 0.34
+payout_share: 0.72
 source_repo: https://huggingface.co/x/Big-GGUF
 quants:
   - quant: Q4_K_M

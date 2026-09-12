@@ -1,0 +1,53 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API
+# (unsloth/DeepSeek-V4-Flash-0731-GGUF, tree/main/UD-Q4_K_XL), 2026-09-12.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# MoE: 284B total / 13B active — xl class (SPEC §7): 256GB+ unified memory.
+# UD-Q4_K_XL is an unsloth dynamic quant, admitted as a per-model exception
+# (docs#38): no reputable standard-named Q4_K_M of this release exists
+# anywhere, and UD-Q4_K_XL sits at or above Q4_K_M quality, which is the
+# floor the class price buys. Five shards as published; shard 1 is a 5 MB
+# header-only file. Classed (and priced) by TOTAL params like every MoE entry.
+id: deepseek-v4-flash-0731
+display_name: DeepSeek V4 Flash 0731
+family: deepseek-v4
+params_b: 284
+active_params_b: 13
+architecture: moe
+license:
+  name: MIT
+  url: https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731/blob/main/LICENSE
+  notes: OSI open source; no usage or relicensing conditions.
+payout_class: xl
+context_length: 1048576
+embeddings: false
+fingerprint_set_id: fp-gen-v2
+price_in_per_mtok: 0.3 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12)
+price_out_per_mtok: 0.97
+payout_share: 0.75 # share of the charge paid to the node
+source_repo: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF
+quants:
+  - quant: UD-Q4_K_XL
+    parts:
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00001-of-00005.gguf
+        sha256: d13ce8f90855547bdaebe7312f531a1f2c4f822178d3103951f27fe884395cfa
+        size_bytes: 5257408
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00002-of-00005.gguf
+        sha256: d5b61668950f4743aacd677675d7fcf7507dbe1db6d304e8ff97ed1f00827bee
+        size_bytes: 48935523072
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00003-of-00005.gguf
+        sha256: 9705db7e589f360685ca7bd48100b270d78d228d4f5aa980508f3b2778af5494
+        size_bytes: 48980787136
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00004-of-00005.gguf
+        sha256: 7f13a68e3ca64208454c4ba32cc2757c0cbe78e3e5576c3142bf7007ca97da42
+        size_bytes: 49999168416
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00005-of-00005.gguf
+        sha256: ed0d93164d3784968d6ce40d6d201ba98337f16e7db1b31fe495b2b0f334cc09
+        size_bytes: 7174505088
+    size_bytes: 155095241120 # sum of the parts
+    min_vram_mb: 172032
+    min_ram_mb: 212992
+    tok_s_estimates: # estimates (13B active decode, memory-bandwidth bound)
+      m3-ultra: { min: 20, max: 45 }
+      cpu-avx2: { min: 1, max: 5 }
