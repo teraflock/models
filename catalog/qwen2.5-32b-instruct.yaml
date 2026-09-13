@@ -8,6 +8,10 @@ params_b: 32.76
 license:
   name: Apache-2.0
   url: https://huggingface.co/Qwen/Qwen2.5-32B-Instruct/blob/main/LICENSE
+  notes: >-
+    Apache-2.0 (OSI): Qwen2.5 0.5B/1.5B/7B/14B/32B are Apache-2.0 (3B and 72B
+    are not). No usage or relicensing conditions; upstream ships no NOTICE file.
+    Licensing pass 2026-09-13: see LICENSES.md.
 payout_class: mid
 context_length: 32768
 embeddings: false

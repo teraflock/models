@@ -8,7 +8,10 @@ params_b: 23.6
 license:
   name: Apache-2.0
   url: https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501
-  notes: Mistral Small 3 (2501) is Apache-2.0; no usage restrictions.
+  notes: >-
+    Apache-2.0 (OSI): Mistral Small 3 (2501) is Apache-2.0. No usage or
+    relicensing conditions; upstream ships no NOTICE file. Licensing pass
+    2026-09-13: see LICENSES.md.
 payout_class: mid
 context_length: 32768
 embeddings: false

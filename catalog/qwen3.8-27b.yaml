@@ -13,7 +13,10 @@ params_b: 27.8
 license:
   name: Apache-2.0
   url: https://huggingface.co/Qwen/Qwen3.8-27B/blob/main/LICENSE
-  notes: OSI open source; no usage or relicensing conditions.
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Licensing pass 2026-09-13: see
+    LICENSES.md.
 payout_class: mid
 context_length: 262144
 embeddings: false

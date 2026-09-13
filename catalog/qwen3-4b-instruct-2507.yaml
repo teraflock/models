@@ -8,7 +8,10 @@ params_b: 4.0
 license:
   name: Apache-2.0
   url: https://www.apache.org/licenses/LICENSE-2.0
-  notes: OSI open source; no usage or relicensing conditions.
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Licensing pass 2026-09-13: see
+    LICENSES.md.
 payout_class: small
 context_length: 262144
 embeddings: false

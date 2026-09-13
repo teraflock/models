@@ -9,7 +9,11 @@ params_b: 31.3
 license:
   name: Apache-2.0
   url: https://ai.google.dev/gemma/docs/gemma_4_license
-  notes: OSI open source; no usage or relicensing conditions.
+  notes: >-
+    Apache-2.0 per Google's Gemma 4 license page and the ungated HF repos
+    (verified 2026-09-13). Google's separate Prohibited Use Policy is not
+    incorporated into the license; the ToS prohibits the same uses for every
+    model. Licensing pass 2026-09-13: see LICENSES.md.
 payout_class: mid
 context_length: 262144
 embeddings: false

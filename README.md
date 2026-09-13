@@ -30,11 +30,12 @@ needs (see the `proto` repo) plus catalog-only metadata:
   impossibly fast, so the validator rejects an MoE manifest (by
   `architecture: moe` or the `-a<N>b` id suffix) that omits it. Pricing
   still keys on total params.
-- **License:** real license name/URL/notes. Llama-family models are under the
-  Llama Community License — commercial serving is permitted but carries
-  attribution/AUP/700M-MAU conditions; a legal pass on the catalog is required
-  before commercial launch (SPEC §13.2). Everything else in the current
-  catalog is Apache-2.0.
+- **License:** real license name/URL/notes. [`LICENSES.md`](LICENSES.md) is
+  the licensing pass over the catalog (2026-09-13), organised by license
+  family: Llama Community License (commercial serving permitted; attribution,
+  AUP and notice obligations, which Teraflock carries), Gemma 4 and everything
+  else Apache-2.0, DeepSeek MIT. `notes` names the family and any caveat; a
+  model under new or bespoke terms needs a section there before it merges.
 - **Economics:** `payout_class` (nano/small/mid/large/xl, by TOTAL params)
   and the SPEC §7 row for it, copied verbatim: `price_in_per_mtok` and
   `price_out_per_mtok` (interactive USD per million input / output tokens;

@@ -18,7 +18,11 @@ architecture: moe
 license:
   name: MIT
   url: https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731/blob/main/LICENSE
-  notes: OSI open source; no usage or relicensing conditions.
+  notes: >-
+    MIT (OSI). Redistribution keeps the copyright and permission notice
+    (LICENSES.md carries it); no usage conditions. The UD-Q4_K_XL artifact is
+    unsloth's re-quant of the MIT weights. Licensing pass 2026-09-13: see
+    LICENSES.md.
 payout_class: xl
 context_length: 1048576
 embeddings: false

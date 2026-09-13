@@ -7,12 +7,13 @@ family: llama-3.2
 params_b: 3.21
 license:
   name: Llama 3.2 Community License
-  url: https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct/blob/main/LICENSE.txt
+  url: https://developer.meta.com/ai/llama3_2/license/
   notes: >-
-    Not OSI open source. Commercial use and hosted serving are permitted, but the
-    license carries attribution ("Built with Llama"), acceptable-use, and >700M-MAU
-    relicensing conditions. SPEC §13.2: legal pass required on the catalog before
-    commercial launch.
+    Llama 3.2 Community License (not OSI). Hosted serving and redistribution by
+    reference are permitted; Teraflock carries the obligations: "Built with
+    Llama" on the website and console, the AUP flowed into the ToS, the notice
+    line, and the 700M-MAU clause (n/a). Licensing pass 2026-09-13: see
+    LICENSES.md.
 payout_class: nano
 context_length: 131072
 embeddings: false

@@ -8,6 +8,10 @@ params_b: 0.137
 license:
   name: Apache-2.0
   url: https://huggingface.co/nomic-ai/nomic-embed-text-v1.5
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Licensing pass 2026-09-13: see
+    LICENSES.md.
 payout_class: nano # hardware-tier class; embeddings are priced separately (SPEC §7 note)
 context_length: 8192
 embeddings: true
