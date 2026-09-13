@@ -94,11 +94,9 @@ whether the Prohibited Use Policy binds, the Teraflock Terms of Service
 prohibit the same categories of use for every model, so nothing further
 flows down to API customers.
 
-> Catalog status: docs#26 decision 3 (2026-09-12) chose to remove the three
-> Gemma models on the understanding that they were under non-OSI terms. That
-> understanding was wrong (above); the removal is on hold pending founder
-> re-confirmation. If re-confirmed, delete the three manifests and this
-> section stays as the record.
+> Catalog status: all three Gemma models stay in the catalog (decided
+> 2026-09-13 on the analysis above; an earlier plan to remove them had
+> assumed non-OSI terms).
 
 ## Family 3 — Apache-2.0 (OSI; no NOTICE files upstream)
 
