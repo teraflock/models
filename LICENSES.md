@@ -45,7 +45,7 @@ permitted, subject to the obligations below.
 | Obligation (section) | What it requires | How Teraflock meets it |
 |---|---|---|
 | 1.b.i(A) — copy of the Agreement with distribution | "provide a copy of this Agreement with any such Llama Materials" | Each manifest's `license.url` is the Agreement; the daemon shows it in `tera models` and the website/desktop model pages link it. |
-| 1.b.i(B) — attribution | "prominently display 'Built with Llama' on a related website, user interface, blogpost, about page, or product documentation" | teraflock.com footer, app.teraflock.com console footer, and this file. |
+| 1.b.i(B) — attribution | "prominently display 'Built with Llama' on a related website, user interface, blogpost, about page, or product documentation" | The teraflock.ai site footer, on every page (one placement is what the clause requires; decided 2026-09-13 to carry no more than that), and this file. |
 | 1.b.iii — notice file | retain the notice text in a "Notice" file distributed with the Materials | The three notice lines below, in this public file. |
 | 1.b.iv — Acceptable Use Policy | comply with, and not let others violate, the AUP "incorporated by reference" (`https://developer.meta.com/ai/llama3_1/use-policy/` etc.) | The Teraflock Terms of Service prohibit the AUP's listed uses for every model (website#3 carries the clause); the gateway's abuse controls are the enforcement. |
 | 1.b.i — naming | an AI model *built from* Llama Materials must start with "Llama" | n/a: no derivatives. Catalog ids already start with `llama-`. |

@@ -11,7 +11,7 @@ license:
   notes: >-
     Llama 3.2 Community License (not OSI). Hosted serving and redistribution by
     reference are permitted; Teraflock carries the obligations: "Built with
-    Llama" on the website and console, the AUP flowed into the ToS, the notice
+    Llama" on the website, the AUP flowed into the ToS, the notice
     line, and the 700M-MAU clause (n/a). Licensing pass 2026-09-13: see
     LICENSES.md.
 payout_class: nano
