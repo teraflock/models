@@ -108,10 +108,21 @@ flows down to API customers.
 | `qwen3.6-35b-a3b`, `qwen3.8-27b` | Alibaba Cloud (Qwen) | `ggml-org/Qwen3.6-35B-A3B-GGUF`, `ggml-org/Qwen3.8-27B-GGUF` |
 | `mistral-small-24b-instruct-2501` | Mistral AI | `bartowski/Mistral-Small-24B-Instruct-2501-GGUF` |
 | `nomic-embed-text-v1.5` | Nomic AI | `nomic-ai/nomic-embed-text-v1.5-GGUF` |
+| `julia-1` (decision) | Supersonic Labs; base encoder `jhu-clsp/mmBERT-small` is MIT | `ggml-org/Julia-1-GGUF` |
+| `laya` (decision) | Convai Innovations; base encoder ModernBERT-large is Apache-2.0 | `ggml-org/Laya-GGUF` |
+| `kev-4b` (decision) | Jared Palmer; base `Qwen/Qwen3.5-4B-Base` is Apache-2.0 | `ggml-org/Kev-4B-GGUF` |
+| `clef-flash`, `clef` (decision) | Cloudflare; bases `Qwen/Qwen3.5-9B`, `Qwen/Qwen3.8-27B` are Apache-2.0 | `ggml-org/Clef-Flash-GGUF`, `ggml-org/Clef-GGUF` |
 
 Qwen2.5 caveat: the 0.5B/1.5B/7B/14B/32B checkpoints are Apache-2.0; the 3B
 and 72B are under the Qwen Research / Qwen licences and are **not** in the
 catalog. Every Qwen3.x checkpoint above is Apache-2.0.
+
+Decision models (added 2026-10-03, after the 2026-09-13 pass; checked the
+same way that day): each source repo and each `ggml-org` GGUF repo is tagged
+`apache-2.0`, is ungated, and ships no NOTICE file (Hugging Face API). Julia
+1 is published under Apache-2.0; its base encoder, `jhu-clsp/mmBERT-small`,
+is MIT (no usage conditions either). OpenJev is CC BY-NC and is **not** in
+the catalog.
 
 **Answer:** redistribution and serving are permitted without usage
 conditions. Apache-2.0 §4 obligations when distributing:

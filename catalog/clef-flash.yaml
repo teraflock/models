@@ -1,0 +1,69 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Clef-Flash-GGUF), 2026-10-03.
+# DECISION MODEL (decision: true): served via /v1/systemone, returns typed
+# probabilities, generates no tokens. tok_s_estimates are therefore NOT decode
+# speeds: they are rough prompt-processing (input tokens evaluated per second)
+# estimates, NOT benchmarks; decision requests are exempt from timing checks.
+# Needs a runtime build with llama.cpp >= b11382 (proto design note
+# 2026-10-03-decision-models).
+#
+# Clef-Flash (Cloudflare): post-trained from Qwen/Qwen3.5-9B with a joint
+# schema head. Source model Cloudflare/clef-flash. Upstream is multimodal; we
+# serve TEXT ONLY (the GGUF conversion is text-only under llama.cpp, and the
+# gateway rejects `images` in v1). A server running Clef serves only
+# /v1/systemone.
+# params_b is the publisher's nominal 9B, which SPEC §7 and the design note
+# class as small ((3.5, 9], 9 inclusive). The GGUF's own tensor count is
+# 9.08B (backbone plus the decision head); if the class is ever keyed on that
+# figure this model moves to mid, which is a SPEC decision, not a catalog one.
+# Context 65,536 is the served window chosen for the mesh, below the
+# architecture's 262,144 in the GGUF metadata; upstream's reference encoder
+# defaults to 16,384.
+# No BF16 entry: the 18.2 GB reference file is out of proportion to the small
+# class (twice the Q8_0, which already fits no 12 GB card). Q8_0 is the
+# highest-fidelity quant listed.
+id: clef-flash
+display_name: Clef-Flash
+family: clef
+params_b: 9.0
+architecture: dense
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/Cloudflare/clef-flash/blob/main/LICENSE
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; the base model (Qwen/Qwen3.5-9B) is
+    Apache-2.0 too; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Checked 2026-10-03 (source and GGUF
+    repos ungated, both tagged apache-2.0): see LICENSES.md.
+payout_class: small # decision models carry the class row unchanged (SPEC §7 note)
+context_length: 65536
+embeddings: false
+decision: true
+fingerprint_set_id: fp-decision-v1
+price_in_per_mtok: 0.018 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12); decision models bill input tokens only
+price_out_per_mtok: 0.036 # class row, never applies: no output tokens
+payout_share: 0.45 # share of the charge paid to the node
+source_repo: https://huggingface.co/ggml-org/Clef-Flash-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/main/Clef-Flash-Q4_K_M.gguf
+    sha256: 3243a51d7a7bb205fb4fcf402a7df763f7d31e6645a9c10e5754c4395ab85b66
+    size_bytes: 6486448192
+    min_vram_mb: 7500
+    min_ram_mb: 10240
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 150, max: 350 }
+      rtx-4090: { min: 800, max: 2200 }
+      rtx-3060: { min: 250, max: 650 }
+      cpu-avx2: { min: 12, max: 32 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/main/Clef-Flash-Q8_0.gguf
+    sha256: 8754b06f7d16d6d6ab63493b2ee385cc0ed6abde8c25c39298dc3e1eb05593d9
+    size_bytes: 9657260096
+    min_vram_mb: 11100
+    min_ram_mb: 14336
+    notes: Highest-fidelity quant listed; canary comparisons use it as the reference (no BF16 entry, see header).
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 120, max: 300 }
+      rtx-4090: { min: 700, max: 1900 }
+      cpu-avx2: { min: 8, max: 22 }

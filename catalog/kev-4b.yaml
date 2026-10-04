@@ -1,0 +1,74 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Kev-4B-GGUF), 2026-10-03.
+# DECISION MODEL (decision: true): served via /v1/systemone, returns typed
+# probabilities, generates no tokens. tok_s_estimates are therefore NOT decode
+# speeds: they are rough prompt-processing (input tokens evaluated per second)
+# estimates, NOT benchmarks; decision requests are exempt from timing checks.
+# Needs a runtime build with llama.cpp >= b11382 (proto design note
+# 2026-10-03-decision-models).
+#
+# Kev-4B (Jared Palmer): a LoRA adapter and pointer head merged onto
+# Qwen/Qwen3.5-4B-Base, run prefill-only; 4.21B parameters in the GGUF.
+# Source model jaredpalmer/kev-4b. English.
+# Context: the source card serves states of up to 65,536 tokens (listed
+# here) but VALIDATES accuracy only to 8,192, the trained length; the GGUF
+# metadata carries the backbone's 262,144. min_vram_mb/min_ram_mb follow the
+# catalog's size-based rule and do not budget a full 65K-token state (the
+# card measures about 4.6 GB above the weights for one on Apple Silicon).
+id: kev-4b
+display_name: Kev-4B
+family: kev
+params_b: 4.2
+architecture: dense
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/jaredpalmer/kev-4b
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; the base model (Qwen/Qwen3.5-4B-Base) is
+    Apache-2.0 too; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Checked 2026-10-03 (source and GGUF
+    repos ungated, both tagged apache-2.0): see LICENSES.md.
+payout_class: small # decision models carry the class row unchanged (SPEC §7 note)
+context_length: 65536
+embeddings: false
+decision: true
+fingerprint_set_id: fp-decision-v1
+price_in_per_mtok: 0.018 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12); decision models bill input tokens only
+price_out_per_mtok: 0.036 # class row, never applies: no output tokens
+payout_share: 0.45 # share of the charge paid to the node
+source_repo: https://huggingface.co/ggml-org/Kev-4B-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/main/Kev-4B-Q4_K_M.gguf
+    sha256: 33ae6b18926502b2209a1bf7d3b61a350d65938441515c686bb87d226a19eff9
+    size_bytes: 3033489824
+    min_vram_mb: 3500
+    min_ram_mb: 6144
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 300, max: 700 }
+      rtx-4090: { min: 1500, max: 4000 }
+      rtx-3060: { min: 500, max: 1300 }
+      cpu-avx2: { min: 25, max: 70 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/main/Kev-4B-Q8_0.gguf
+    sha256: 7c2ebed90560522c2801389db482ac1dc4c36d828f201f6074c1d60e433948da
+    size_bytes: 4483801504
+    min_vram_mb: 5200
+    min_ram_mb: 8192
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 250, max: 600 }
+      rtx-4090: { min: 1300, max: 3500 }
+      rtx-3060: { min: 450, max: 1100 }
+      cpu-avx2: { min: 18, max: 50 }
+  - quant: BF16
+    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/main/Kev-4B-BF16.gguf
+    sha256: c690ee43d8244f7cd7dd960aebaadda3666e68bd69aba1af9135737b4f0595d9
+    size_bytes: 8427020704
+    min_vram_mb: 9700
+    min_ram_mb: 12288
+    notes: BF16 is the canary-reference quant for decision comparisons (upstream serves the model in bf16).
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 220, max: 550 }
+      rtx-4090: { min: 1200, max: 3200 }
+      rtx-3060: { min: 400, max: 1000 }
+      cpu-avx2: { min: 12, max: 35 }

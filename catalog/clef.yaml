@@ -1,0 +1,65 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Clef-GGUF), 2026-10-03.
+# DECISION MODEL (decision: true): served via /v1/systemone, returns typed
+# probabilities, generates no tokens. tok_s_estimates are therefore NOT decode
+# speeds: they are rough prompt-processing (input tokens evaluated per second)
+# estimates, NOT benchmarks; decision requests are exempt from timing checks.
+# Needs a runtime build with llama.cpp >= b11382 (proto design note
+# 2026-10-03-decision-models).
+#
+# Clef (Cloudflare): post-trained from Qwen/Qwen3.8-27B with a joint schema
+# head; 27.0B parameters in the GGUF. Source model Cloudflare/clef. Upstream
+# is multimodal; we serve TEXT ONLY (the GGUF conversion is text-only under
+# llama.cpp, and the gateway rejects `images` in v1). A server running Clef
+# serves only /v1/systemone.
+# Context 65,536 is the served window chosen for the mesh, below the
+# architecture's 262,144 in the GGUF metadata; upstream's reference encoder
+# defaults to 16,384.
+# No BF16 entry: the reference file is 54 GB, beyond every hardware class the
+# mid tier targets. Q8_0 is the highest-fidelity quant listed.
+id: clef
+display_name: Clef
+family: clef
+params_b: 27.0
+architecture: dense
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/Cloudflare/clef/blob/main/LICENSE
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; the base model (Qwen/Qwen3.8-27B) is
+    Apache-2.0 too; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Checked 2026-10-03 (source and GGUF
+    repos ungated, both tagged apache-2.0): see LICENSES.md.
+payout_class: mid # decision models carry the class row unchanged (SPEC §7 note)
+context_length: 65536
+embeddings: false
+decision: true
+fingerprint_set_id: fp-decision-v1
+price_in_per_mtok: 0.075 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12); decision models bill input tokens only
+price_out_per_mtok: 0.29 # class row, never applies: no output tokens
+payout_share: 0.65 # share of the charge paid to the node
+source_repo: https://huggingface.co/ggml-org/Clef-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/ggml-org/Clef-GGUF/resolve/main/Clef-Q4_K_M.gguf
+    sha256: 3d16919ab2c7de7b5f3343e2e29cb31b12ba9f30eb6c6bbac257157f5a279c7a
+    size_bytes: 19232219104
+    min_vram_mb: 22100
+    min_ram_mb: 28672
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 45, max: 110 }
+      m4-max: { min: 70, max: 170 }
+      rtx-4090: { min: 250, max: 700 }
+      cpu-avx2: { min: 3, max: 9 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Clef-GGUF/resolve/main/Clef-Q8_0.gguf
+    sha256: ab027f7c4a77686befe7ac5a77d31778ee1a2fb65499daa0f144ed27b1400e15
+    size_bytes: 28732215264
+    min_vram_mb: 32900
+    min_ram_mb: 36864
+    notes: Highest-fidelity quant listed; canary comparisons use it as the reference (no BF16 entry, see header).
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 35, max: 90 }
+      m4-max: { min: 55, max: 140 }
+      rtx-4090-pair: { min: 200, max: 600 }
+      cpu-avx2: { min: 2, max: 6 }

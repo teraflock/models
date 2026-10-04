@@ -1,0 +1,61 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Laya-GGUF), 2026-10-03.
+# DECISION MODEL (decision: true): served via /v1/systemone, returns typed
+# probabilities, generates no tokens. tok_s_estimates are therefore NOT decode
+# speeds: they are rough prompt-processing (input tokens evaluated per second)
+# estimates, NOT benchmarks; decision requests are exempt from timing checks.
+# Needs a runtime build with llama.cpp >= b11382 (proto design note
+# 2026-10-03-decision-models).
+#
+# Laya (Convai Innovations): the ENGLISH root checkpoint of
+# convaiinnovations/laya, ModernBERT-large plus a decision head, 421M
+# parameters. English only: upstream documents that it collapses on non-Latin
+# scripts while staying confident. Context is the checkpoint's documented
+# budget of 512 tokens per question (about 320 for the state, 192 for the
+# options); the GGUF metadata carries the architecture maximum (8,192), which
+# is not what the checkpoint was trained or evaluated at.
+id: laya
+display_name: Laya
+family: laya
+params_b: 0.421
+architecture: dense
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/convaiinnovations/laya
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Checked 2026-10-03 (source and GGUF
+    repos ungated, both tagged apache-2.0): see LICENSES.md.
+payout_class: nano # decision models carry the class row unchanged (SPEC §7 note)
+context_length: 512
+embeddings: false
+decision: true
+fingerprint_set_id: fp-decision-v1
+price_in_per_mtok: 0.014 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12); decision models bill input tokens only
+price_out_per_mtok: 0.030 # class row, never applies: no output tokens
+payout_share: 0.40 # share of the charge paid to the node
+source_repo: https://huggingface.co/ggml-org/Laya-GGUF
+quants:
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Laya-GGUF/resolve/main/Laya-Q8_0.gguf
+    sha256: c06528c5746d3bb8baa72a27938be95abbfd0b226f8471e8a9e365ed0bb066d2
+    size_bytes: 449397600
+    min_vram_mb: 768
+    min_ram_mb: 1024
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 700, max: 2000 }
+      rtx-4090: { min: 2000, max: 5000 }
+      rtx-3060: { min: 800, max: 1800 }
+      cpu-avx2: { min: 120, max: 400 }
+  - quant: BF16
+    artifact_url: https://huggingface.co/ggml-org/Laya-GGUF/resolve/main/Laya-BF16.gguf
+    sha256: edeea94939cd1575c1f984c28982170c0e47caab66e4b80993fed992519573b4
+    size_bytes: 844026720
+    min_vram_mb: 1280
+    min_ram_mb: 2048
+    notes: BF16 is the canary-reference quant for decision comparisons.
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 600, max: 1800 }
+      rtx-4090: { min: 1800, max: 4500 }
+      rtx-3060: { min: 700, max: 1600 }
+      cpu-avx2: { min: 90, max: 300 }

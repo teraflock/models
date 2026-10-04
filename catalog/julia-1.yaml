@@ -1,0 +1,60 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Julia-1-GGUF), 2026-10-03.
+# DECISION MODEL (decision: true): served via /v1/systemone, returns typed
+# probabilities, generates no tokens. tok_s_estimates are therefore NOT decode
+# speeds: they are rough prompt-processing (input tokens evaluated per second)
+# estimates, NOT benchmarks; decision requests are exempt from timing checks.
+# Needs a runtime build with llama.cpp >= b11382 (proto design note
+# 2026-10-03-decision-models).
+#
+# Julia 1 (Supersonic Labs): mmBERT-small multilingual encoder plus a decision
+# head, 144.2M parameters in the GGUF. Source model SupersonicLabs/Julia-1.
+# Context 8,192 is the checkpoint's combined state/question/options limit
+# (source card, and the GGUF's modern-bert.context_length); upstream accuracy
+# benchmarks ran at 1,024. Natively accepts 2-20 options per question.
+id: julia-1
+display_name: Julia 1
+family: julia
+params_b: 0.144
+architecture: dense
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/SupersonicLabs/Julia-1
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; the base encoder (jhu-clsp/mmBERT-small) is MIT;
+    upstream ships no
+    NOTICE file, so §4(d) adds nothing. Checked 2026-10-03 (source and GGUF
+    repos ungated, both tagged apache-2.0): see LICENSES.md.
+payout_class: nano # decision models carry the class row unchanged (SPEC §7 note)
+context_length: 8192
+embeddings: false
+decision: true
+fingerprint_set_id: fp-decision-v1
+price_in_per_mtok: 0.014 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12); decision models bill input tokens only
+price_out_per_mtok: 0.030 # class row, never applies: no output tokens
+payout_share: 0.40 # share of the charge paid to the node
+source_repo: https://huggingface.co/ggml-org/Julia-1-GGUF
+quants:
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Julia-1-GGUF/resolve/main/Julia-1-Q8_0.gguf
+    sha256: 1ea6a7e87156eeeda88cb7a36a61265b37ba7b993897b7289b99aea5b5e47069
+    size_bytes: 168166496
+    min_vram_mb: 512
+    min_ram_mb: 1024
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 2000, max: 5000 }
+      rtx-4090: { min: 5000, max: 12000 }
+      rtx-3060: { min: 2000, max: 4500 }
+      cpu-avx2: { min: 400, max: 1200 }
+  - quant: BF16
+    artifact_url: https://huggingface.co/ggml-org/Julia-1-GGUF/resolve/main/Julia-1-BF16.gguf
+    sha256: 229d167b78fe6362b55a6a1bcaf204cf838bb2b7b872a2fe90686dad7c5d626e
+    size_bytes: 303319136
+    min_vram_mb: 768
+    min_ram_mb: 1024
+    notes: BF16 is the canary-reference quant for decision comparisons.
+    tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
+      m2-max: { min: 1800, max: 4500 }
+      rtx-4090: { min: 4500, max: 11000 }
+      rtx-3060: { min: 1800, max: 4000 }
+      cpu-avx2: { min: 300, max: 900 }

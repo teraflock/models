@@ -23,7 +23,8 @@ Each `catalog/<model-id>.yaml` supplies everything `flock.types.v1.ModelSpec`
 needs (see the `proto` repo) plus catalog-only metadata:
 
 - **Identity:** `id`, `display_name`, `family`, `params_b` (TOTAL),
-  `context_length`, `embeddings`, and for Mixture-of-Experts models
+  `context_length`, `embeddings`, `decision` (see
+  [Decision models](#decision-models)), and for Mixture-of-Experts models
   `active_params_b` (parameters active per token) plus `architecture: moe`.
   The trust engine's timing envelopes key on active params: an MoE
   without `active_params_b` reads every honest node serving it as
@@ -41,7 +42,9 @@ needs (see the `proto` repo) plus catalog-only metadata:
   `price_out_per_mtok` (interactive USD per million input / output tokens;
   batch is 0.5× of both) and `payout_share` (the share of the charge paid to
   the serving node, rising with hardware scarcity). Embedding models carry
-  their own row (input tokens only). The validator rejects any value off the
+  their own row (input tokens only). Decision models have no row of their
+  own: they copy their class row unchanged and are billed on input tokens
+  at the class input rate. The validator rejects any value off the
   table — prices change in the SPEC first, then here.
 - **Per-quant artifacts:** `quant` (canonical llama.cpp name), `artifact_url`
   (real upstream GGUF URL; production nodes fetch through our HF-proxying CDN),
@@ -52,12 +55,55 @@ needs (see the `proto` repo) plus catalog-only metadata:
   estimates, not benchmarks; the trust engine uses them only as coarse timing
   sanity bounds (SPEC §2.2) and they will be replaced by fleet-measured
   percentiles. A hardware class is omitted when the quant cannot reasonably
-  run on it (e.g. 32B on a 12GB 3060).
+  run on it (e.g. 32B on a 12GB 3060). Models that decode nothing reuse the
+  field with a different meaning, stated in the manifest header: batched
+  embedding tokens/sec for embedding models, prompt-processing tokens/sec
+  for decision models.
 
 Current catalog: `llama-3.2-3b-instruct`, `qwen2.5-1.5b-instruct` (nano);
 `llama-3.1-8b-instruct`, `qwen2.5-7b-instruct` (small); `qwen2.5-32b-instruct`,
 `mistral-small-24b-instruct-2501` (mid); `llama-3.3-70b-instruct` (large);
-`nomic-embed-text-v1.5` (embeddings).
+`nomic-embed-text-v1.5` (embeddings); `julia-1`, `laya`, `kev-4b`,
+`clef-flash`, `clef` (decision). The `catalog/` directory is the full list.
+
+### Decision models
+
+A manifest with `decision: true` is a **typed decision model**: it is served
+via `POST /v1/systemone`, answers `choice` / `score` / `noul` questions
+about a state with probabilities, and generates no tokens. The contract
+(public API, wire, semantics) is the proto design note
+`2026-10-03-decision-models`; `decision` mirrors
+`flock.types.v1.ModelSpec.decision`.
+
+- `decision` is an optional boolean, default `false`, so existing manifests
+  do not change. It is **mutually exclusive with `embeddings: true`** (schema
+  and validator both refuse the pair). `embeddings` stays required and is
+  `false` on a decision manifest.
+- **Pricing:** the `payout_class` row, copied unchanged like any chat model
+  of that class (SPEC §7, "Decision models"). Only the input price is ever
+  charged; `price_out_per_mtok` is still the class value, not zero and not
+  omitted, so the ledger formula and every reader of the catalog stay as
+  they are. There is no flat decision row.
+- **Fingerprints:** `fingerprint_set_id` must name a set of kind `decision`
+  (`fp-decision-v1`).
+- **Artifacts:** GGUF, from the `ggml-org/*-GGUF` conversions, under the same
+  quant, hash and size rules as everything else. Encoder-sized models list
+  `Q8_0` first (the `flock/<id>` default) and `BF16` as the canary-reference
+  quant; a model whose `BF16` file is out of proportion to its class lists
+  `Q8_0` as the highest-fidelity quant instead and says so in its header.
+- **`context_length`** is the window the model is served at, taken from the
+  source model card, which for these models is often far below the
+  architecture maximum in the GGUF metadata (Laya: 512 against 8,192).
+- **`tok_s_estimates`** is required by the schema but there is no decode
+  speed to estimate. Decision manifests put **prompt-processing throughput**
+  there: input tokens evaluated per second within one request, per hardware
+  class, as rough estimates. It is the same move embedding manifests make
+  (batched embedding tokens/sec), it keeps the field's unit (tokens/sec) and
+  shape, and it is the only speed a decision request has. Nothing may read
+  it as a decode envelope: decision requests are exempt from the trust
+  engine's timing checks, as embeddings are.
+- They need a runtime build with llama.cpp >= b11382; a node on an older
+  build cannot load the artifact.
 
 ## Fingerprints: the trust-model split
 
@@ -84,8 +130,53 @@ tail-distribution-sensitive), and strict format-following. Embedding models
 use probe inputs compared by cosine similarity against private reference
 vectors.
 
-Sets are versioned (`fp-gen-v1`, `fp-gen-v2`, `fp-embed-v1`) and rotated by
-publishing a new set and flipping `fingerprint_set_id` in the manifests.
+Decision models use sets of kind `decision`. A probe is a `/v1/systemone`
+request body without `model`: a fixed `state` (a string, or structured JSON
+written as YAML) and `questions` in the public shape.
+
+```yaml
+id: fp-decision-v1
+kind: decision          # no `defaults`: nothing is decoded
+description: ...
+prompts:                # 8..20 probes
+  - id: multi-01
+    category: decision-probe
+    state: "Hi, we were billed twice for March ..."   # or a mapping / list
+    questions:          # 1..64, id -> question
+      department:
+        type: choice
+        instructions: Which department should handle this?
+        criteria:       # 2..20 options: description, or null for none
+          billing: Invoices, payments, refunds
+          other: null
+      urgency:
+        type: score
+        instructions: How urgent is this?
+        criteria: [not urgent, soon, blocking]        # 2..10 levels, lowest first
+      escalate:
+        type: noul
+        instructions: Does this need a human within the hour?
+        criteria:       # optional; keys must be quoted or YAML reads booleans
+          "true": ...
+          "false": ...
+```
+
+**Order is part of the probe.** Questions, and the options inside
+`criteria`, reach the model in the order written, so a consumer must read
+those mappings in document order (a `yaml.Node`, never a Go map) and
+serialise structured states as compact JSON in that same order. The private
+half is the expected **probabilities** per `(model_sha, quant,
+runtime_build_id)`, compared within an absolute tolerance per probability
+and never by hash, because backends differ in the last bits. Probabilities,
+answers or any other expected output never go in this repo; the schema
+rejects unknown fields on a probe and on a question. One set has to run on
+every decision model in the catalog, so probes stay inside the tightest
+native limits among them: English, short enough for a 512-token window, and
+at most 20 options per choice (the public API allows 255).
+
+Sets are versioned (`fp-gen-v1`, `fp-gen-v2`, `fp-embed-v1`,
+`fp-decision-v1`) and rotated by publishing a new set and flipping
+`fingerprint_set_id` in the manifests.
 
 ## Validation
 
@@ -98,14 +189,17 @@ go run . -root ../.. -release # what promote.yml runs: TODO-verify is an error
 
 The validator checks every manifest against the JSON Schemas and then
 cross-checks what a schema cannot express: `payout_class` vs `params_b`
-ranges, exact SPEC §7 pricing per class (with the embeddings override),
+ranges, exact SPEC §7 pricing per class (with the embeddings override; decision
+models take the class row), `embeddings`/`decision` mutual exclusion,
 `active_params_b` present on Mixture-of-Experts manifests (`architecture:
 moe` or the `-a<N>b` id suffix) and absent on `architecture: dense`,
 `min_vram_mb`/`min_ram_mb` sanity vs artifact size, canonical quant naming and
 quant-name/URL consistency, sha256 shape (real 64-hex or an explicit
 `TODO-verify` — never a plausible-looking fake), fingerprint set references
-and generation/embedding kind match, filename/id agreement, and fingerprint
-set determinism rules (greedy, bounded `max_tokens`, unique prompt ids).
+and generation/embedding/decision kind match, filename/id agreement,
+fingerprint set determinism rules (greedy, bounded `max_tokens`, unique
+prompt ids), and decision probes against the public `/v1/systemone` request
+limits.
 
 `-release` adds the publishing gate: every `TODO-verify` (single-file
 sha256, any part, any mmproj) is reported as an issue and `-emit-flat`
@@ -182,7 +276,11 @@ ref it was deployed from, not the stable object.
    serving it on that build are not fingerprint-challenged. The control
    plane's `admin fingerprints coverage --runtime-build-id <id>` reports
    the gap per (model, prompt).
-6. `cd tools/validate && go run . -root ../..` must print `catalog OK`.
+6. A decision model (`/v1/systemone`)? Set `decision: true`, keep
+   `embeddings: false`, point `fingerprint_set_id` at a `decision` set, take
+   `context_length` from the source model card, and fill `tok_s_estimates`
+   with prompt-processing tokens/sec (see [Decision models](#decision-models)).
+7. `cd tools/validate && go run . -root ../..` must print `catalog OK`.
 
 ### Quant names and publishers
 
