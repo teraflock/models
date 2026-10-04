@@ -31,7 +31,11 @@ type Manifest struct {
 	PayoutClass   string  `yaml:"payout_class"`
 	ContextLength int     `yaml:"context_length"`
 	Embeddings    bool    `yaml:"embeddings"`
-	FingerprintID string  `yaml:"fingerprint_set_id"`
+	// Decision marks a typed decision model served via /v1/systemone (no
+	// generated tokens). Optional in YAML, default false; mutually exclusive
+	// with Embeddings. Mirrors flock.types.v1.ModelSpec.decision.
+	Decision      bool   `yaml:"decision"`
+	FingerprintID string `yaml:"fingerprint_set_id"`
 	// Pricing is USD per million tokens, split input/output, plus the share
 	// of the charge paid to the node — all fixed per class by SPEC §7.
 	PriceIn     float64 `yaml:"price_in_per_mtok"`
@@ -102,7 +106,26 @@ type FPPrompt struct {
 	Prompt    string `yaml:"prompt"`
 	Input     string `yaml:"input"`
 	MaxTokens int    `yaml:"max_tokens"`
+	// State and Questions are the decision-probe payload, in the public
+	// /v1/systemone request shape. They stay yaml.Nodes because key order is
+	// part of that contract (questions and options reach the model in the
+	// order written) and a Go map would lose it.
+	State     yaml.Node `yaml:"state"`
+	Questions yaml.Node `yaml:"questions"`
 }
+
+// Limits on a decision probe. The first four are the public /v1/systemone
+// contract (proto design note 2026-10-03-decision-models); the last is
+// tighter than the contract's 255 on purpose: one probe set has to run on
+// every decision model in the catalog, and the smallest native option
+// limit among them is Julia-1's 20.
+const (
+	decisionMaxQuestions    = 64
+	decisionMinOptions      = 2
+	decisionMinScoreLevels  = 2
+	decisionMaxScoreLevels  = 10
+	decisionMaxProbeOptions = 20
+)
 
 // pricing is one SPEC §7 row: interactive USD per million input and
 // output tokens, and the share of the charge paid to the node. Batch is
@@ -123,6 +146,11 @@ var classPricing = map[string]pricing{
 
 // embeddingPricing overrides the class table for embeddings-flagged models
 // (SPEC §7: embeddings are priced on input tokens; they produce none).
+//
+// Decision models have NO override (SPEC §7 "Decision models"): they are
+// billed on input tokens at their class's input rate and payout share, so a
+// decision manifest carries its class row unchanged, output price included
+// even though it never applies.
 var embeddingPricing = pricing{0.004, 0.004, 0.50}
 
 // classParamBounds validates payout_class against params_b (billions):
@@ -374,16 +402,24 @@ func CheckManifest(m Manifest, sets map[string]FingerprintSet) []string {
 			"the trust engine's timing envelopes will misjudge honest nodes — add active_params_b (and architecture: moe)")
 	}
 
+	// A model is served from exactly one endpoint family: chat/completions,
+	// /v1/embeddings or /v1/systemone (ModelSpec.embeddings and .decision
+	// are mutually exclusive on the wire too).
+	if m.Embeddings && m.Decision {
+		issues = append(issues, "embeddings and decision are mutually exclusive — a model is served via /v1/embeddings or /v1/systemone, not both")
+	}
+
 	// Pricing table (SPEC §7): input and output price and the payout share
-	// are fixed per class; a manifest copies them, never sets them.
+	// are fixed per class; a manifest copies them, never sets them. Decision
+	// models take the class row as it stands (see embeddingPricing).
 	want := classPricing[m.PayoutClass]
 	if m.Embeddings {
 		want = embeddingPricing
 	}
 	if !almostEq(m.PriceIn, want.In) || !almostEq(m.PriceOut, want.Out) || !almostEq(m.PayoutShare, want.Share) {
 		issues = append(issues, fmt.Sprintf(
-			"pricing (in=%g, out=%g, payout_share=%g) does not match §7 table for class %q embeddings=%v (want in=%g, out=%g, payout_share=%g)",
-			m.PriceIn, m.PriceOut, m.PayoutShare, m.PayoutClass, m.Embeddings, want.In, want.Out, want.Share))
+			"pricing (in=%g, out=%g, payout_share=%g) does not match §7 table for class %q embeddings=%v decision=%v (want in=%g, out=%g, payout_share=%g)",
+			m.PriceIn, m.PriceOut, m.PayoutShare, m.PayoutClass, m.Embeddings, m.Decision, want.In, want.Out, want.Share))
 	}
 	if m.PayoutShare <= 0 || m.PayoutShare >= 1 {
 		issues = append(issues, fmt.Sprintf("payout_share %g must be strictly between 0 and 1", m.PayoutShare))
@@ -412,8 +448,11 @@ func CheckManifest(m Manifest, sets map[string]FingerprintSet) []string {
 			issues = append(issues, fmt.Sprintf("fingerprint_set_id %q has no file in fingerprints/prompts/", m.FingerprintID))
 		} else {
 			wantKind := "generation"
-			if m.Embeddings {
+			switch {
+			case m.Embeddings:
 				wantKind = "embedding"
+			case m.Decision:
+				wantKind = "decision"
 			}
 			if set.Kind != wantKind {
 				issues = append(issues, fmt.Sprintf("fingerprint set %q has kind %q, model requires %q", m.FingerprintID, set.Kind, wantKind))
@@ -602,13 +641,24 @@ func CheckFingerprintSet(s FingerprintSet) []string {
 			}
 		}
 	}
+	if s.Kind == "decision" && s.Defaults != nil {
+		issues = append(issues, "decision set must not set defaults — nothing is decoded, so there are no decode parameters")
+	}
 	ids := map[string]bool{}
 	for _, p := range s.Prompts {
 		if ids[p.ID] {
 			issues = append(issues, fmt.Sprintf("duplicate prompt id %q", p.ID))
 		}
 		ids[p.ID] = true
+		if s.Kind != "decision" && (p.State.Kind != 0 || p.Questions.Kind != 0) {
+			issues = append(issues, fmt.Sprintf("prompt %q: %s prompts must not set 'state'/'questions'", p.ID, s.Kind))
+		}
 		switch s.Kind {
+		case "decision":
+			if p.Prompt != "" || p.Input != "" || p.MaxTokens != 0 {
+				issues = append(issues, fmt.Sprintf("prompt %q: decision probes carry only 'state' and 'questions' (no prompt/input/max_tokens)", p.ID))
+			}
+			issues = append(issues, prefixAll(fmt.Sprintf("prompt %q", p.ID), checkDecisionProbe(p))...)
 		case "generation":
 			if p.Prompt == "" {
 				issues = append(issues, fmt.Sprintf("prompt %q: generation prompts need a non-empty 'prompt'", p.ID))
@@ -627,6 +677,154 @@ func CheckFingerprintSet(s FingerprintSet) []string {
 	}
 	return issues
 }
+
+// checkDecisionProbe validates a decision probe against the public
+// /v1/systemone request contract, reading the YAML in document order: a
+// non-empty state, 1..64 uniquely named questions, and per type the
+// criteria the gateway would accept. A probe the gateway would reject can
+// never be replayed, so it must not get into a set.
+func checkDecisionProbe(p FPPrompt) []string {
+	var issues []string
+
+	switch st := &p.State; {
+	case st.Kind == 0:
+		issues = append(issues, "decision probes need a 'state'")
+	case st.Kind == yaml.ScalarNode && (st.Tag != "!!str" || strings.TrimSpace(st.Value) == ""):
+		issues = append(issues, "state must be a non-empty string, object or array")
+	case st.Kind != yaml.ScalarNode && len(st.Content) == 0:
+		issues = append(issues, "state must not be an empty object or array")
+	}
+
+	qs := &p.Questions
+	if qs.Kind != yaml.MappingNode {
+		return append(issues, "decision probes need 'questions': a mapping of question id to question")
+	}
+	n := len(qs.Content) / 2
+	if n < 1 || n > decisionMaxQuestions {
+		issues = append(issues, fmt.Sprintf("questions has %d entries, want 1..%d", n, decisionMaxQuestions))
+	}
+	seen := map[string]bool{}
+	for i := 0; i+1 < len(qs.Content); i += 2 {
+		id, q := qs.Content[i].Value, qs.Content[i+1]
+		pfx := "questions." + id
+		if id == "" {
+			issues = append(issues, "questions: empty question id")
+		}
+		if seen[id] {
+			issues = append(issues, fmt.Sprintf("%s: duplicate question id", pfx))
+		}
+		seen[id] = true
+		issues = append(issues, prefixAll(pfx, checkDecisionQuestion(q))...)
+	}
+	return issues
+}
+
+// checkDecisionQuestion validates one question node: type, instructions,
+// and the criteria shape its type requires.
+func checkDecisionQuestion(q *yaml.Node) []string {
+	if q.Kind != yaml.MappingNode {
+		return []string{"must be a mapping with type, instructions and criteria"}
+	}
+	var (
+		issues       []string
+		typ          string
+		instructions *yaml.Node
+		criteria     *yaml.Node
+	)
+	for i := 0; i+1 < len(q.Content); i += 2 {
+		switch k, v := q.Content[i].Value, q.Content[i+1]; k {
+		case "type":
+			typ = v.Value
+		case "instructions":
+			instructions = v
+		case "criteria":
+			criteria = v
+		default:
+			issues = append(issues, fmt.Sprintf("unknown field %q (a probe carries the request only — never expected answers)", k))
+		}
+	}
+	if instructions == nil || !isDescription(instructions) {
+		issues = append(issues, "instructions must be a non-empty string, object or array")
+	}
+	switch typ {
+	case "choice":
+		if criteria == nil || criteria.Kind != yaml.MappingNode {
+			return append(issues, "choice needs criteria: a mapping of option to description (or null)")
+		}
+		n := len(criteria.Content) / 2
+		if n < decisionMinOptions || n > decisionMaxProbeOptions {
+			issues = append(issues, fmt.Sprintf("choice has %d options, want %d..%d (the probe-set cap: every catalog decision model must accept it)",
+				n, decisionMinOptions, decisionMaxProbeOptions))
+		}
+		seen := map[string]bool{}
+		for i := 0; i+1 < len(criteria.Content); i += 2 {
+			k, v := criteria.Content[i], criteria.Content[i+1]
+			if k.Value == "" {
+				issues = append(issues, "criteria: empty option key")
+			}
+			if seen[k.Value] {
+				issues = append(issues, fmt.Sprintf("criteria: duplicate option %q", k.Value))
+			}
+			seen[k.Value] = true
+			if !isNull(v) && !isDescription(v) {
+				issues = append(issues, fmt.Sprintf("criteria.%s: description must be a non-empty string, object, array or null", k.Value))
+			}
+		}
+	case "score":
+		if criteria == nil || criteria.Kind != yaml.SequenceNode {
+			return append(issues, "score needs criteria: a list of level descriptions, lowest first")
+		}
+		if n := len(criteria.Content); n < decisionMinScoreLevels || n > decisionMaxScoreLevels {
+			issues = append(issues, fmt.Sprintf("score has %d levels, want %d..%d", n, decisionMinScoreLevels, decisionMaxScoreLevels))
+		}
+		for i, v := range criteria.Content {
+			if !isDescription(v) {
+				issues = append(issues, fmt.Sprintf("criteria[%d]: level description must be a non-empty string, object or array", i))
+			}
+		}
+	case "noul":
+		if criteria == nil {
+			break
+		}
+		if criteria.Kind != yaml.MappingNode {
+			return append(issues, `noul criteria, when present, is a mapping with exactly "true" and "false"`)
+		}
+		got := map[string]bool{}
+		for i := 0; i+1 < len(criteria.Content); i += 2 {
+			k, v := criteria.Content[i], criteria.Content[i+1]
+			// An unquoted YAML true/false key is a boolean, which has no
+			// JSON object-key form; the public shape needs the strings.
+			if k.Tag != "!!str" || (k.Value != "true" && k.Value != "false") {
+				issues = append(issues, fmt.Sprintf(`noul criteria key %q must be the quoted string "true" or "false"`, k.Value))
+				continue
+			}
+			got[k.Value] = true
+			if !isDescription(v) {
+				issues = append(issues, fmt.Sprintf("criteria.%s: description must be a non-empty string, object or array", k.Value))
+			}
+		}
+		if !got["true"] || !got["false"] || len(criteria.Content) != 4 {
+			issues = append(issues, `noul criteria needs exactly a "true" and a "false" description`)
+		}
+	default:
+		issues = append(issues, fmt.Sprintf("type %q must be choice, score or noul", typ))
+	}
+	return issues
+}
+
+// isDescription reports whether n is usable description text in the
+// public contract: a non-empty string, or structured JSON.
+func isDescription(n *yaml.Node) bool {
+	switch n.Kind {
+	case yaml.ScalarNode:
+		return n.Tag == "!!str" && strings.TrimSpace(n.Value) != ""
+	case yaml.MappingNode, yaml.SequenceNode:
+		return true
+	}
+	return false
+}
+
+func isNull(n *yaml.Node) bool { return n.Kind == yaml.ScalarNode && n.Tag == "!!null" }
 
 func compileSchema(path string) (*jsonschema.Schema, error) {
 	c := jsonschema.NewCompiler()

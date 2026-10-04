@@ -1,0 +1,174 @@
+# Teraflock fingerprint challenge set — schema/fingerprint-prompts.schema.json
+# Decision probes: the coordinator replays each probe through the node's
+# /v1/systemone and compares every returned probability, within an absolute
+# tolerance, against private reference probabilities keyed by
+# (model_sha, quant, runtime_build_id). Never by hash: backends differ in the
+# last bits. The probes are PUBLIC; the reference probabilities are private
+# (control-plane repo) and must never be added here.
+#
+# Each probe is a /v1/systemone request body minus `model`: `state` (string,
+# or structured JSON written as YAML) and `questions` in the public shape.
+# ORDER MATTERS: questions, and the options inside `criteria`, reach the
+# model in the order written, so read these mappings in document order.
+# Structured states use only strings, integers and booleans so their compact
+# JSON form is unambiguous.
+#
+# One set serves every decision model in the catalog, so each probe stays
+# inside the tightest native limits among them: English text (Laya is
+# English-only), short enough for Laya's 512-token budget, and at most 20
+# options per choice (Julia-1).
+id: fp-decision-v1
+kind: decision
+description: >-
+  Probe set for typed decision models. Covers all three question types
+  (choice, score, noul), string and structured-JSON states, options with and
+  without descriptions, and a multi-question request. States mix rare words,
+  code, numerics and identifiers so a substituted model, quant or runtime
+  shifts the probabilities measurably.
+prompts:
+  - id: choice-route-01
+    category: decision-probe
+    state: >-
+      Payouts to our Wise account have bounced three days running with error
+      PX-4471, and the dashboard still shows the old IBAN ending 0093.
+    questions:
+      department:
+        type: choice
+        instructions: Which team should handle this message?
+        criteria:
+          billing: Payments, invoicing, refunds, payout details
+          technical: Bugs, outages, API errors
+          account: Login, profile, identity verification
+          other: Anything else
+
+  - id: choice-null-01
+    category: decision-probe
+    state: "fn dispatch(&mut self, req: EphemeralRequest) -> Result<TokenStream, YieldError>"
+    questions:
+      language:
+        type: choice
+        instructions: Which programming language is this line written in?
+        criteria:
+          go: null
+          rust: null
+          python: null
+          sql: null
+          typescript: null
+
+  - id: choice-mixed-01
+    category: decision-probe
+    state: >-
+      The sesquipedalian ombudsman's report was, frankly, a defenestration of
+      the committee's credibility, though the appendix on drainage was fine.
+    questions:
+      tone:
+        type: choice
+        instructions: What is the overall tone of the text towards the committee?
+        criteria:
+          critical: The text faults or attacks the committee
+          neutral: null
+          approving: The text praises the committee
+
+  - id: score-urgency-01
+    category: decision-probe
+    state: >-
+      Checkout has returned HTTP 503 for every customer since 09:14 UTC and
+      483 orders are stuck in the queue.
+    questions:
+      urgency:
+        type: score
+        instructions: How urgent is this?
+        criteria:
+          - can wait
+          - this week
+          - today
+          - right now
+
+  - id: score-array-01
+    category: decision-probe
+    state:
+      - "09:02 node enrolled, runtime build b11382"
+      - "09:07 model laya-q8_0 ready"
+      - "09:31 fingerprint challenge failed, 2 of 9 probes out of tolerance"
+      - "09:32 fingerprint challenge failed, 3 of 9 probes out of tolerance"
+      - "09:40 node quarantined by coordinator"
+    questions:
+      health:
+        type: score
+        instructions: Rate the health of the node described by this event log.
+        criteria:
+          - The node is failing and must not serve traffic
+          - The node shows repeated faults
+          - The node shows an isolated fault
+          - The node is healthy
+          - The node is healthy and has a long clean record
+
+  - id: noul-plain-01
+    category: decision-probe
+    state: >-
+      A bee's waggle dance encodes both the azimuth relative to the sun and
+      the distance to the forage site.
+    questions:
+      mentions_distance:
+        type: noul
+        instructions: Does the text say that the dance communicates distance?
+
+  - id: noul-criteria-01
+    category: decision-probe
+    state: >-
+      Thanks for the quick fix last week. Unrelated: if the March invoice is
+      not corrected by Friday we will move our 40 seats to another vendor.
+    questions:
+      churn_risk:
+        type: noul
+        instructions: Does the customer threaten to leave?
+        criteria:
+          "true": The customer states or implies they will cancel or switch vendor
+          "false": The customer makes no such statement
+
+  - id: json-state-01
+    category: decision-probe
+    state:
+      invoice:
+        vendor: Acme GmbH
+        number: INV-2026-00317
+        total_cents: 125000
+        currency: EUR
+        due: "2026-08-31"
+        paid: false
+      today: "2026-10-03"
+    questions:
+      status:
+        type: choice
+        instructions: What is the status of the invoice as of today?
+        criteria:
+          paid: The invoice has been paid
+          open: The invoice is unpaid and not yet due
+          overdue: The invoice is unpaid and past its due date
+      large:
+        type: noul
+        instructions: Is the invoice total above 1000 EUR?
+
+  - id: multi-01
+    category: decision-probe
+    state: >-
+      Hi, we were billed twice for March (2 x 49.00 USD, card ending 4242).
+      Please refund the duplicate today or we will cancel our plan.
+    questions:
+      department:
+        type: choice
+        instructions: Which department should handle this?
+        criteria:
+          billing: Invoices, payments, refunds
+          technical: Bugs, outages, system errors
+          other: Everything else
+      urgency:
+        type: score
+        instructions: How urgent is this?
+        criteria:
+          - not urgent
+          - soon
+          - blocking
+      escalate:
+        type: noul
+        instructions: Does this need a human within the hour?

@@ -21,6 +21,14 @@
     "quants"
   ],
   "additionalProperties": false,
+  "not": {
+    "description": "embeddings and decision are mutually exclusive: a model serves exactly one of chat/completions, /v1/embeddings or /v1/systemone.",
+    "required": ["embeddings", "decision"],
+    "properties": {
+      "embeddings": { "const": true },
+      "decision": { "const": true }
+    }
+  },
   "properties": {
     "id": {
       "type": "string",
@@ -65,7 +73,7 @@
     },
     "payout_class": {
       "enum": ["nano", "small", "mid", "large", "xl"],
-      "description": "Pricing class per SPEC §7. Embedding models carry a class for hardware-tiering purposes but are priced separately (embeddings: true overrides the class price table)."
+      "description": "Pricing class per SPEC §7. Embedding models carry a class for hardware-tiering purposes but are priced separately (embeddings: true overrides the class price table). Decision models carry the class row unchanged."
     },
     "context_length": {
       "type": "integer",
@@ -75,6 +83,11 @@
     "embeddings": {
       "type": "boolean",
       "description": "True if served via /v1/embeddings instead of chat/completions."
+    },
+    "decision": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if served via /v1/systemone: a typed decision model, no generated tokens. Optional, default false. Mutually exclusive with embeddings: true. Mirrors flock.types.v1.ModelSpec.decision (proto design note 2026-10-03-decision-models). Priced at the payout_class row unchanged (input tokens only; there are no output tokens) and fingerprinted with a kind: decision prompt set."
     },
     "fingerprint_set_id": {
       "type": "string",
@@ -88,7 +101,7 @@
     "price_out_per_mtok": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Interactive customer price in USD per million output (completion) tokens; batch is 0.5×. Fixed per payout_class by SPEC §7."
+      "description": "Interactive customer price in USD per million output (completion) tokens; batch is 0.5×. Fixed per payout_class by SPEC §7. Decision models copy the class value like everything else although they never produce an output token."
     },
     "payout_share": {
       "type": "number",
@@ -187,7 +200,7 @@
           "type": "object",
           "minProperties": 1,
           "additionalProperties": false,
-          "description": "ESTIMATED single-stream decode tokens/sec envelopes per hardware class (embedding models: batched embedding tokens/sec). Used for timing sanity checks (SPEC §2.2). Omit a class if the quant cannot reasonably run on it.",
+          "description": "ESTIMATED single-stream decode tokens/sec envelopes per hardware class (embedding models: batched embedding tokens/sec; decision models: prompt-processing tokens/sec, i.e. input tokens evaluated per second in one request, since nothing is decoded). Used for timing sanity checks (SPEC §2.2), from which embedding and decision requests are exempt. Omit a class if the quant cannot reasonably run on it.",
           "properties": {
             "m2-max": { "$ref": "#/$defs/envelope" },
             "m4-max": { "$ref": "#/$defs/envelope" },

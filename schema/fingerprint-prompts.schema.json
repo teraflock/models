@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://teraflock.dev/schema/fingerprint-prompts.schema.json",
   "title": "Teraflock fingerprint challenge prompt set",
-  "description": "Public challenge prompt sets (SPEC §2.2). Prompts are public by design; the expected outputs are precomputed privately in the control-plane repo per (model_sha, quant, runtime_build_id) tuple and never published. All generation sets use greedy decoding (temperature 0) with a fixed seed and short max_tokens so honest nodes reproduce outputs bit-for-bit for a given tuple.",
+  "description": "Public challenge prompt sets (SPEC §2.2). Prompts are public by design; the expected outputs are precomputed privately in the control-plane repo per (model_sha, quant, runtime_build_id) tuple and never published — a decision probe carries the request (state + questions) and nothing else, never probabilities. All generation sets use greedy decoding (temperature 0) with a fixed seed and short max_tokens so honest nodes reproduce outputs bit-for-bit for a given tuple.",
   "type": "object",
   "required": ["id", "kind", "description", "prompts"],
   "additionalProperties": false,
@@ -13,8 +13,8 @@
       "description": "Set id; must equal the filename (without .yaml)."
     },
     "kind": {
-      "enum": ["generation", "embedding"],
-      "description": "generation sets are replayed through chat completions; embedding sets through /v1/embeddings (compared by cosine similarity against reference vectors)."
+      "enum": ["generation", "embedding", "decision"],
+      "description": "generation sets are replayed through chat completions; embedding sets through /v1/embeddings (compared by cosine similarity against reference vectors); decision sets through /v1/systemone (each returned probability compared within an absolute tolerance against private reference probabilities, never by hash)."
     },
     "description": { "type": "string" },
     "defaults": {
@@ -39,7 +39,34 @@
   "allOf": [
     {
       "if": { "properties": { "kind": { "const": "generation" } } },
-      "then": { "required": ["defaults"] }
+      "then": {
+        "required": ["defaults"],
+        "properties": {
+          "prompts": { "items": { "required": ["prompt"] } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "embedding" } } },
+      "then": {
+        "properties": {
+          "prompts": { "items": { "required": ["input"] } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "decision" } } },
+      "then": {
+        "not": { "required": ["defaults"] },
+        "properties": {
+          "prompts": {
+            "items": {
+              "required": ["state", "questions"],
+              "not": { "required": ["max_tokens"] }
+            }
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -54,7 +81,8 @@
             "arithmetic-chain",
             "rare-token",
             "format-following",
-            "embedding-probe"
+            "embedding-probe",
+            "decision-probe"
           ]
         },
         "prompt": {
@@ -65,14 +93,106 @@
           "type": "string",
           "description": "Input text for embedding sets."
         },
+        "state": {
+          "type": ["string", "object", "array"],
+          "description": "Decision sets: the state, as in the public /v1/systemone request. A string, or structured JSON (object/array) that reaches the model as compact JSON text."
+        },
+        "questions": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 64,
+          "additionalProperties": { "$ref": "#/$defs/question" },
+          "description": "Decision sets: question id -> question, exactly the public /v1/systemone shape. KEY ORDER IS SIGNIFICANT (questions, and the options inside criteria, are shown to the model in the order written): consumers must read this mapping in document order, never through an unordered map."
+        },
         "max_tokens": {
           "type": "integer",
           "minimum": 1,
           "maximum": 128,
-          "description": "Per-prompt override of defaults.max_tokens."
+          "description": "Per-prompt override of defaults.max_tokens (generation sets only)."
         }
       },
-      "oneOf": [{ "required": ["prompt"] }, { "required": ["input"] }]
+      "oneOf": [
+        { "required": ["prompt"] },
+        { "required": ["input"] },
+        { "required": ["state", "questions"] }
+      ],
+      "dependentRequired": {
+        "state": ["questions"],
+        "questions": ["state"]
+      }
+    },
+    "description_value": {
+      "description": "A piece of free-form description text: a non-empty string, or structured JSON.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "object" },
+        { "type": "array" }
+      ]
+    },
+    "question": {
+      "type": "object",
+      "description": "One typed question of a decision probe (public /v1/systemone shape; limits from the proto design note 2026-10-03-decision-models).",
+      "required": ["type", "instructions"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["choice", "score", "noul"] },
+        "instructions": { "$ref": "#/$defs/description_value" },
+        "criteria": {}
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "choice" } } },
+          "then": {
+            "required": ["criteria"],
+            "properties": {
+              "criteria": {
+                "type": "object",
+                "minProperties": 2,
+                "maxProperties": 255,
+                "additionalProperties": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/description_value" },
+                    { "type": "null" }
+                  ]
+                },
+                "description": "Option key -> description, or null for an option with no description."
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "score" } } },
+          "then": {
+            "required": ["criteria"],
+            "properties": {
+              "criteria": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 10,
+                "items": { "$ref": "#/$defs/description_value" },
+                "description": "Level descriptions, lowest first."
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "noul" } } },
+          "then": {
+            "properties": {
+              "criteria": {
+                "type": "object",
+                "required": ["true", "false"],
+                "additionalProperties": false,
+                "properties": {
+                  "true": { "$ref": "#/$defs/description_value" },
+                  "false": { "$ref": "#/$defs/description_value" }
+                },
+                "description": "Optional; exactly a \"true\" and a \"false\" description. In YAML the keys must be quoted, or they parse as booleans."
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

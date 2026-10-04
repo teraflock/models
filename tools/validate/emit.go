@@ -31,6 +31,10 @@ type flatModel struct {
 	PayoutClass   string  `json:"payout_class"`
 	ContextLength int     `json:"context_length"`
 	Embeddings    bool    `json:"embeddings"`
+	// Decision is always written (true or false, like Embeddings): the
+	// entry is a typed decision model served via /v1/systemone. Mirrors
+	// flock.types.v1.ModelSpec.decision.
+	Decision bool `json:"decision"`
 	// Parts is set for sharded artifacts (then ArtifactURL is empty and
 	// SHA256 is the composite id, CompositeSHA256); Mmproj is the optional
 	// vision projector sidecar. Both mirror flock.types.v1.ModelSpec.
@@ -89,6 +93,7 @@ func EmitFlatWith(root string, opts Options) ([]byte, error) {
 				PayoutClass:   m.PayoutClass,
 				ContextLength: m.ContextLength,
 				Embeddings:    m.Embeddings,
+				Decision:      m.Decision,
 				Mmproj:        q.Mmproj,
 			}
 			if len(q.Parts) > 0 {
