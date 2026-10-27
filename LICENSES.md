@@ -105,7 +105,7 @@ flows down to API customers.
 | `gpt-oss-20b`, `gpt-oss-120b` | OpenAI | `ggml-org/gpt-oss-*-GGUF`, `unsloth/gpt-oss-20b-GGUF` |
 | `qwen2.5-1.5b-instruct`, `qwen2.5-7b-instruct`, `qwen2.5-32b-instruct` | Alibaba Cloud (Qwen) | `bartowski/Qwen2.5-*-Instruct-GGUF` |
 | `qwen3-4b-instruct-2507`, `qwen3-8b`, `qwen3-32b`, `qwen3-30b-a3b-instruct-2507`, `qwen3-coder-30b-a3b-instruct`, `qwen3-next-80b-a3b-instruct`, `qwen3-235b-a22b-instruct-2507` | Alibaba Cloud (Qwen) | `ggml-org/Qwen3-32B-GGUF`, `unsloth/Qwen3-*-GGUF` |
-| `qwen3.6-35b-a3b`, `qwen3.8-27b` | Alibaba Cloud (Qwen) | `ggml-org/Qwen3.6-35B-A3B-GGUF`, `ggml-org/Qwen3.8-27B-GGUF` |
+| `qwen3.6-27b`, `qwen3.6-35b-a3b`, `qwen3.8-27b` | Alibaba Cloud (Qwen) | `ggml-org/Qwen3.6-27B-GGUF`, `ggml-org/Qwen3.6-35B-A3B-GGUF`, `ggml-org/Qwen3.8-27B-GGUF` |
 | `mistral-small-24b-instruct-2501` | Mistral AI | `bartowski/Mistral-Small-24B-Instruct-2501-GGUF` |
 | `nomic-embed-text-v1.5` | Nomic AI | `nomic-ai/nomic-embed-text-v1.5-GGUF` |
 | `julia-1` (decision) | Supersonic Labs; base encoder `jhu-clsp/mmBERT-small` is MIT | `ggml-org/Julia-1-GGUF` |

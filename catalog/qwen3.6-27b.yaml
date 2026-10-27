@@ -1,0 +1,58 @@
+# Teraflock model manifest — schema/manifest.schema.json
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Qwen3.6-27B-GGUF), 2026-10-27.
+# tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
+#
+# Dense 27.8B, Qwen3.6 generation on the Qwen3.5 architecture (`qwen3_5`:
+# 64 layers, Gated DeltaNet linear attention with full attention every 4th
+# layer) — the same architecture the catalogued Qwen3.8-27B and
+# Qwen3.6-35B-A3B already run on, so the pinned runtime (llama.cpp b11382)
+# loads it without a pin bump. Thinking mode is the upstream default
+# (`<think>…</think>` before the answer; `enable_thinking: false` in
+# chat_template_kwargs turns it off). Upstream is a vision-language release;
+# we serve TEXT ONLY (the mmproj, mtp and dflash sidecar files are
+# deliberately not catalogued — vision and speculative decoding need
+# runtime plumbing the mesh doesn't have yet). Qwen ships no coder or
+# thinking-only variant at 27B: this one manifest is the whole family.
+# ggml-org converted from Qwen/Qwen3.6-27B commit 6a9e13bd (.src_sha).
+id: qwen3.6-27b
+display_name: Qwen3.6 27B
+family: qwen3.6
+params_b: 27.8
+license:
+  name: Apache-2.0
+  url: https://huggingface.co/Qwen/Qwen3.6-27B/blob/main/LICENSE
+  notes: >-
+    Apache-2.0 (OSI). No usage or relicensing conditions; upstream ships no
+    NOTICE file, so §4(d) adds nothing. Same terms as the rest of the Qwen3.x
+    line (licensing pass 2026-09-13): see LICENSES.md.
+payout_class: mid
+context_length: 262144
+embeddings: false
+fingerprint_set_id: fp-gen-v1
+price_in_per_mtok: 0.075 # USD per Mtok interactive, batch 0.5x — SPEC §7 (2026-09-12)
+price_out_per_mtok: 0.29
+payout_share: 0.65 # share of the charge paid to the node
+source_repo: https://huggingface.co/ggml-org/Qwen3.6-27B-GGUF
+quants:
+  - quant: Q4_K_M
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q4_K_M.gguf
+    sha256: 65b753ea835627f7b511143c6ceb976525c7f21f5df8c664bc0a9c23d1c49921
+    size_bytes: 19095766304
+    min_vram_mb: 21900
+    min_ram_mb: 28672
+    tok_s_estimates: # estimates
+      m2-max: { min: 12, max: 21 }
+      m4-max: { min: 18, max: 30 }
+      rtx-4090: { min: 34, max: 52 }
+      cpu-avx2: { min: 1, max: 3 }
+  - quant: Q8_0
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q8_0.gguf
+    sha256: 73f8260284708ed78ae266df672288b6ad1f2c73ec7ffeb7514b5cecdba646c9
+    size_bytes: 28595762464
+    min_vram_mb: 32700
+    min_ram_mb: 36864
+    tok_s_estimates: # estimates
+      m2-max: { min: 8, max: 14 }
+      m4-max: { min: 11, max: 19 }
+      rtx-4090-pair: { min: 24, max: 40 }
+      cpu-avx2: { min: 1, max: 2 }
