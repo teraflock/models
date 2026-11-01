@@ -222,6 +222,29 @@ Merging to main is therefore not publishing. Quants with `TODO-verify`
 hashes are left out of the staging object; the stable object cannot be
 written at all while any remain (release-mode validation).
 
+### Drift from the artifact host
+
+A pinned `sha256`/`size_bytes` is only as good as the file still being
+the one it was copied from. Publishers do re-upload a GGUF under the same
+name (seven of 67 artifacts had drifted by 2026-11-01, and every node
+that downloaded one failed verification after 18-28 GB). The validator's
+`-verify-remote` mode fetches the Hugging Face tree API for every folder
+the catalog references and compares `lfs.oid` / `lfs.size` with the
+manifest, printing each mismatch:
+
+```sh
+cd tools/validate && go run . -root ../.. -verify-remote   # needs the network; HF_TOKEN optional
+```
+
+Exit 1 is confirmed drift (re-pin the listed entries from the tree API
+output, never by hand); exit 2 means the check could not complete, which
+is "unverified", not a pass. It runs in two places and deliberately not a
+third: `.github/workflows/verify-remote.yml` daily (06:17 UTC, and on
+demand via *Run workflow*), and inside `promote.yml` before the stable
+object is written, so a stale hash fails the promotion instead of
+reaching nodes. `ci.yml`'s PR path never calls it — PR validation stays
+offline-safe.
+
 ### Release: tag → promote → stable
 
 1. Make sure `cd tools/validate && go run . -root ../.. -release` prints
@@ -239,10 +262,11 @@ written at all while any remain (release-mode validation).
    outputs exist for every new `(model_sha, quant)`, a canary served the
    staging object, and no pricing moved without a SPEC §7 change.
 4. On approval the job re-runs the tests, validates in release mode, emits
-   `catalog.json`, checks every hash in it is a 64-hex digest, writes the
-   step summary (entries added / removed / hash-changed versus the current
-   stable object), uploads to `catalog/catalog.json` and reads the public
-   URL back to confirm it is byte-equal.
+   `catalog.json`, verifies every pinned hash against the artifact host
+   (`-verify-remote`, above), checks every hash in it is a 64-hex digest,
+   writes the step summary (entries added / removed / hash-changed versus
+   the current stable object), uploads to `catalog/catalog.json` and reads
+   the public URL back to confirm it is byte-equal.
 
 Rolling back is the same workflow run manually (Actions → **promote** →
 *Run workflow*, or `gh workflow run promote.yml --repo teraflock/models
@@ -251,9 +275,14 @@ write-only on the bucket; both workflows read the objects back over the
 public URL.
 
 Consumers that do **not** go through these objects: the control plane's
-registry reads `catalog/` straight from a checkout
-(`FLOCK_REGISTRY__CATALOG_PATH`), so its view of the catalog is whatever
-ref it was deployed from, not the stable object.
+registry reads `catalog/` from a ConfigMap
+(`FLOCK_REGISTRY__CATALOG_PATH`). The production deploy
+(`control-plane/deploy/aws/up.sh`) builds that ConfigMap from this repo
+at the tag the stable object was promoted from (read back from the
+object's `git-ref` metadata), so the control plane and the nodes agree on
+what is servable; `TERAFLOCK_CATALOG_REF` overrides that deliberately
+(see `control-plane/deploy/README.md`). The local kind deploy
+(`deploy/bin/start`) still reads the working tree.
 
 ## Adding a model
 
@@ -263,6 +292,8 @@ ref it was deployed from, not the stable object.
    sha256), or mark them `TODO-verify` — CI accepts the placeholder on
    branches and main (the quant is left out of the staging object);
    `promote.yml` refuses to write the stable object while any remain.
+   `go run . -root ../.. -verify-remote` (from `tools/validate`) confirms
+   what you pasted against the same API.
 3. Pick the §7 `payout_class` and copy its exact row — `price_in_per_mtok`,
    `price_out_per_mtok`, `payout_share` (classed by TOTAL `params_b`, MoE
    included).

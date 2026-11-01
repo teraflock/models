@@ -1,0 +1,70 @@
+name: verify-remote
+
+# Does the artifact host still serve the bytes the catalog pins?
+#
+# A manifest's sha256/size_bytes are copied from the Hugging Face tree API
+# when the entry is written; nothing notices when the publisher re-uploads
+# the file under the same name. On 2026-11-01 seven of 67 artifacts had
+# drifted that way, and every node that downloaded one failed sha256
+# verification after 18-28 GB. This job re-reads the tree API for every
+# pinned artifact once a day (and on demand) and fails on any drift, so a
+# re-upload shows up here first. promote.yml runs the same check before
+# writing the stable object; ci.yml's PR path deliberately never does
+# (it must stay offline-safe).
+#
+# On failure: re-pin the listed entries from the tree API output the step
+# summary quotes (CLAUDE.md rule 3: never invent a hash), merge, then cut
+# a release tag so the stable object stops carrying the stale hash.
+
+on:
+  schedule:
+    - cron: "17 6 * * *" # daily, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-remote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache-dependency-path: tools/validate/go.sum
+
+      - name: verify pinned hashes against the artifact host
+        working-directory: tools/validate
+        env:
+          # Optional: raises the anonymous rate limit and covers any repo
+          # that stops exposing its tree anonymously. Unset is fine today.
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -euo pipefail
+          if go run . -root ../.. -verify-remote > out.log 2> err.log; then
+            {
+              echo "## Artifact host matches the catalog"
+              echo
+              grep '^remote OK' out.log
+            } >> "$GITHUB_STEP_SUMMARY"
+            cat out.log
+          else
+            status=$?
+            {
+              echo "## Catalog drifted from the artifact host (exit $status)"
+              echo
+              if [[ $status -eq 2 ]]; then
+                echo "The check could not complete (network or API error) — nothing is verified."
+              else
+                echo "Re-pin each entry below from the tree API (never by hand), merge, then tag a release:"
+              fi
+              echo
+              echo '```'
+              grep -v ' entries$' err.log || true
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            cat err.log
+            exit "$status"
+          fi

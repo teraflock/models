@@ -12,7 +12,11 @@ name: promote
 # (rollback = dispatch on the previous tag). Either way the tree is
 # validated in release mode first: every TODO-verify placeholder is fatal
 # (CLAUDE.md rule 3 says never invent a hash; this is what keeps the
-# placeholder from ever reaching a node).
+# placeholder from ever reaching a node). Then every pinned hash is
+# compared with the artifact host (-verify-remote, the same check the
+# daily verify-remote workflow runs): an upstream re-upload since the
+# manifest was written fails the promotion here instead of failing
+# sha256 verification on a node after a 20 GB download.
 #
 # Reviewer checklist (the workflow cannot verify these; approve only when
 # all hold):
@@ -80,6 +84,18 @@ jobs:
           set -euo pipefail
           go test ./...
           go run . -root ../.. -release -emit-flat ../../catalog.json
+
+      - name: Verify every pinned hash against the artifact host
+        # Fails the promotion when any sha256/size_bytes no longer matches
+        # what Hugging Face serves (lfs.oid / lfs.size), or when the check
+        # cannot complete: an unverified catalog is never promoted.
+        working-directory: tools/validate
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -euo pipefail
+          go run . -root ../.. -release -verify-remote | tee remote.out
+          echo "- artifact host: $(grep '^remote OK' remote.out)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify the emitted catalog
         # Belt and braces over the validator: no placeholder of any kind,
