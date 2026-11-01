@@ -47,8 +47,8 @@ source_repo: https://huggingface.co/ggml-org/Clef-Flash-GGUF
 quants:
   - quant: Q4_K_M
     artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/main/Clef-Flash-Q4_K_M.gguf
-    sha256: 3243a51d7a7bb205fb4fcf402a7df763f7d31e6645a9c10e5754c4395ab85b66
-    size_bytes: 6486448192
+    sha256: eef2968c238a80d49d340430f22410ea3db9934ad1c6fdb233a503cbf9a9b54e
+    size_bytes: 6732781824
     min_vram_mb: 7500
     min_ram_mb: 10240
     tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
@@ -58,8 +58,8 @@ quants:
       cpu-avx2: { min: 12, max: 32 }
   - quant: Q8_0
     artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/main/Clef-Flash-Q8_0.gguf
-    sha256: 8754b06f7d16d6d6ab63493b2ee385cc0ed6abde8c25c39298dc3e1eb05593d9
-    size_bytes: 9657260096
+    sha256: 25f801e2a27610b0ccc0cb1558d7eda3d7a304e34e2c4a04e3079357ff7d906e
+    size_bytes: 9657260288
     min_vram_mb: 11100
     min_ram_mb: 14336
     notes: Highest-fidelity quant listed; canary comparisons use it as the reference (no BF16 entry, see header).

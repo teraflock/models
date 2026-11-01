@@ -28,8 +28,8 @@ source_repo: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF
 quants:
   - quant: Q4_K_M
     artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q4_K_M.gguf
-    sha256: 31629f53165ab6a7dad8c9847dcfd1fdf55829dac1e6e748f4a68581b0033d34
-    size_bytes: 18973870432
+    sha256: c600de0300ae8a0eb3a6c0b8b5561b8b96f16bd2c863c2a66c42de29d391a747
+    size_bytes: 18973870528
     min_vram_mb: 21800
     min_ram_mb: 28672
     tok_s_estimates: # estimates
@@ -39,8 +39,8 @@ quants:
       cpu-avx2: { min: 1, max: 3 }
   - quant: Q8_0
     artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q8_0.gguf
-    sha256: f5c702d8820d36fb55985bb238fc83ee3a313e920f4b752a437c3a6a9e14e4c8
-    size_bytes: 28595763552
+    sha256: aab65c67ef0dad127960efef9247f1832bca105faa1c7a052cc039b223cf86a1
+    size_bytes: 28595763648
     min_vram_mb: 32700
     min_ram_mb: 36864
     tok_s_estimates: # estimates

@@ -54,8 +54,8 @@ quants:
       cpu-avx2: { min: 4, max: 8 }
   - quant: Q8_0
     artifact_url: https://huggingface.co/ggml-org/gemma-4-12B-it-GGUF/resolve/main/gemma-4-12B-it-Q8_0.gguf
-    sha256: abfc3044b93795f6a446fc1a04468ac2d5fc5e9c92e237f09a5b3384c5a433e4
-    size_bytes: 12669646976
+    sha256: 3730903965b3e57bcad0a387110322ce66409559c356a1ae1b61701024e5ce60
+    size_bytes: 12669641920
     min_vram_mb: 14500
     min_ram_mb: 16384
     tok_s_estimates: # estimates
