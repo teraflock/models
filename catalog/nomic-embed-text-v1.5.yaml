@@ -13,7 +13,11 @@ license:
     NOTICE file, so §4(d) adds nothing. Licensing pass 2026-09-13: see
     LICENSES.md.
 payout_class: nano # hardware-tier class; embeddings are priced separately (SPEC §7 note)
-context_length: 8192
+# Tokens PER INPUT. The GGUF's training context (nomic-bert.context_length)
+# is 2048 and llama-server caps a slot there; the 8192 on the model card
+# needs rotary scaling, which changes every vector. An input over 2048
+# tokens is refused (400) — verified on llamacpp-b11382, 2026-11-21.
+context_length: 2048
 embeddings: true
 fingerprint_set_id: fp-embed-v1
 price_in_per_mtok: 0.004 # USD per Mtok, SPEC §7 (2026-09-12); embeddings bill input tokens only
