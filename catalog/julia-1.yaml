@@ -1,5 +1,5 @@
 # Teraflock model manifest — schema/manifest.schema.json
-# sha256/size_bytes verified against the HuggingFace API (ggml-org/Julia-1-GGUF), 2026-10-03.
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Julia-1-GGUF), 2026-11-21.
 # DECISION MODEL (decision: true): served via /v1/systemone, returns typed
 # probabilities, generates no tokens. tok_s_estimates are therefore NOT decode
 # speeds: they are rough prompt-processing (input tokens evaluated per second)
@@ -37,8 +37,8 @@ source_repo: https://huggingface.co/ggml-org/Julia-1-GGUF
 quants:
   - quant: Q8_0
     artifact_url: https://huggingface.co/ggml-org/Julia-1-GGUF/resolve/main/Julia-1-Q8_0.gguf
-    sha256: 1ea6a7e87156eeeda88cb7a36a61265b37ba7b993897b7289b99aea5b5e47069
-    size_bytes: 168166496
+    sha256: ff6cbbe856f1810a8b171528ea908d3b43b5742e73f0698689467559078f347d
+    size_bytes: 168166400
     min_vram_mb: 512
     min_ram_mb: 1024
     tok_s_estimates: # prompt-processing (input) tokens/sec, estimates
@@ -48,8 +48,8 @@ quants:
       cpu-avx2: { min: 400, max: 1200 }
   - quant: BF16
     artifact_url: https://huggingface.co/ggml-org/Julia-1-GGUF/resolve/main/Julia-1-BF16.gguf
-    sha256: 229d167b78fe6362b55a6a1bcaf204cf838bb2b7b872a2fe90686dad7c5d626e
-    size_bytes: 303319136
+    sha256: 5f0be93538a82e1f71fa77f1a5d903d4fc8c364110a2debc8356958654eb6bbc
+    size_bytes: 303319040
     min_vram_mb: 768
     min_ram_mb: 1024
     notes: BF16 is the canary-reference quant for decision comparisons.

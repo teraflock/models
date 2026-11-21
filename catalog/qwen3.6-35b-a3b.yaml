@@ -1,5 +1,5 @@
 # Teraflock model manifest — schema/manifest.schema.json
-# sha256/size_bytes verified against the HuggingFace API (ggml-org/Qwen3.6-35B-A3B-GGUF), 2026-08-30.
+# sha256/size_bytes verified against the HuggingFace API (ggml-org/Qwen3.6-35B-A3B-GGUF), 2026-11-21.
 # tok_s_estimates are rough single-stream decode estimates, NOT benchmarks.
 #
 # MoE: 36B total / 3B active (256 experts, 8 routed + 1 shared) — the
@@ -30,8 +30,8 @@ source_repo: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF
 quants:
   - quant: Q4_K_M
     artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-Q4_K_M.gguf
-    sha256: 671e47e0ec53c665d048b98c3ecbfd5236b5ca9c3e02ed19fc8f81f7b85140c7
-    size_bytes: 20419565568
+    sha256: f4ffe03c9139e6a905a5d346f77d9fabdd179367c3280dfd005d1e75ca5ed8c8
+    size_bytes: 20542732576
     min_vram_mb: 23400
     min_ram_mb: 28672
     tok_s_estimates: # estimates (3B active decode)
@@ -41,8 +41,8 @@ quants:
       cpu-avx2: { min: 6, max: 13 }
   - quant: Q8_0
     artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-Q8_0.gguf
-    sha256: d8d7842cc657d720f39546878e431937c84473aa130c36371669ac17c80c7361
-    size_bytes: 36903139328
+    sha256: f189cedbe18dc524dd74014b23431081262bc9fcc57c18fec7a7a25149246570
+    size_bytes: 36903139616
     min_vram_mb: 42200
     min_ram_mb: 49152
     tok_s_estimates: # estimates
