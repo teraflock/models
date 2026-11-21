@@ -382,7 +382,7 @@ func TestUDQuantRules(t *testing.T) {
 		m.SourceRepo = "https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF"
 		q := validQuant()
 		q.Quant = name
-		q.ArtifactURL = "https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/DeepSeek-V4-Flash-0731-" + name + ".gguf"
+		q.ArtifactURL = "https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/DeepSeek-V4-Flash-0731-" + name + ".gguf"
 		q.SizeBytes = 155_000_000_000
 		q.MinVRAMMB = 172032
 		q.MinRAMMB = 212992

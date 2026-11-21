@@ -29,7 +29,7 @@ payout_share: 0.72 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/gpt-oss-120b-GGUF
 quants:
   - quant: MXFP4
-    artifact_url: https://huggingface.co/ggml-org/gpt-oss-120b-GGUF/resolve/main/gpt-oss-120b-MXFP4.gguf
+    artifact_url: https://huggingface.co/ggml-org/gpt-oss-120b-GGUF/resolve/f59990363fbbb67f01bce03e5e7bf0929e3e320b/gpt-oss-120b-MXFP4.gguf
     sha256: 582bd40f6886200101f4c4ed9f25f3fe80cc14c86e9e2b37746cd8904a0c622d
     size_bytes: 63387346208
     min_vram_mb: 72600

@@ -24,7 +24,7 @@ payout_share: 0.65 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/gemma-4-31B-it-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/main/gemma-4-31B-it-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/c1ac76e99d5513b141e8adde7288b85c3f9c32ec/gemma-4-31B-it-Q4_K_M.gguf
     sha256: 38bd64c852c4b460434cc7162fa9bdcf242faf86502581a754cb72956bb17f84
     size_bytes: 18323733440
     min_vram_mb: 21000
@@ -35,7 +35,7 @@ quants:
       rtx-4090: { min: 32, max: 50 }
       cpu-avx2: { min: 1, max: 3 }
   - quant: Q5_K_M
-    artifact_url: https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/main/gemma-4-31B-it-Q5_K_M.gguf
+    artifact_url: https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/c1ac76e99d5513b141e8adde7288b85c3f9c32ec/gemma-4-31B-it-Q5_K_M.gguf
     sha256: 95192e41190ef5eb72db92b669cea0ed733049c2265a03a64ac5a080d8605958
     size_bytes: 21658401728
     min_vram_mb: 24800
@@ -46,7 +46,7 @@ quants:
       rtx-4090: { min: 28, max: 44 }
       cpu-avx2: { min: 1, max: 3 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/ggml-org/gemma-4-31B-it-GGUF/resolve/main/gemma-4-31B-it-Q8_0.gguf
+    artifact_url: https://huggingface.co/ggml-org/gemma-4-31B-it-GGUF/resolve/f39d380138390ea246513ff0f087352f3cfc3a1b/gemma-4-31B-it-Q8_0.gguf
     sha256: fcd52cebacb165a98df5abe6fb70dbf076835f4a06e064ffb33dd739b8835c9c
     size_bytes: 32635676896
     min_vram_mb: 37400

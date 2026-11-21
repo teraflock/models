@@ -24,7 +24,7 @@ payout_share: 0.40 # share of the charge paid to the node
 source_repo: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/5ab33fa94d1d04e903623ae72c95d1696f09f9e8/Llama-3.2-3B-Instruct-Q4_K_M.gguf
     sha256: 6c1a2b41161032677be168d354123594c0e6e67d2b9227c84f296ad037c728ff
     size_bytes: 2019377696
     min_vram_mb: 2600
@@ -35,7 +35,7 @@ quants:
       rtx-3060: { min: 60, max: 100 }
       cpu-avx2: { min: 12, max: 25 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q8_0.gguf
+    artifact_url: https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/5ab33fa94d1d04e903623ae72c95d1696f09f9e8/Llama-3.2-3B-Instruct-Q8_0.gguf
     sha256: b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921
     size_bytes: 3421899296
     min_vram_mb: 4200

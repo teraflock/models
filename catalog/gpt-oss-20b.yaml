@@ -30,7 +30,7 @@ payout_share: 0.65 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/gpt-oss-20b-GGUF
 quants:
   - quant: MXFP4
-    artifact_url: https://huggingface.co/ggml-org/gpt-oss-20b-GGUF/resolve/main/gpt-oss-20b-MXFP4.gguf
+    artifact_url: https://huggingface.co/ggml-org/gpt-oss-20b-GGUF/resolve/41e8a94d15d62070b36cf4553a0250717ecf46b8/gpt-oss-20b-MXFP4.gguf
     sha256: 27cd6c432c7672cb812a92f611cf3ba7bbc35928262bb1e1253ff4ee6ae35901
     size_bytes: 12109566624
     min_vram_mb: 14000
@@ -41,7 +41,7 @@ quants:
       rtx-4090: { min: 120, max: 180 }
       cpu-avx2: { min: 8, max: 16 }
   - quant: F16
-    artifact_url: https://huggingface.co/unsloth/gpt-oss-20b-GGUF/resolve/main/gpt-oss-20b-F16.gguf
+    artifact_url: https://huggingface.co/unsloth/gpt-oss-20b-GGUF/resolve/d449b42d93e1c2c7bda5312f5c25c8fb91dfa9b4/gpt-oss-20b-F16.gguf
     sha256: 4e4f9cd88d6456e4f389e7262eca4a8d565211e2b22ece9ca7a8556168ff3c66
     size_bytes: 13792639168
     min_vram_mb: 16000

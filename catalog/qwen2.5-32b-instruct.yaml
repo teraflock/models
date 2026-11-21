@@ -22,7 +22,7 @@ payout_share: 0.65 # share of the charge paid to the node
 source_repo: https://huggingface.co/bartowski/Qwen2.5-32B-Instruct-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/bartowski/Qwen2.5-32B-Instruct-GGUF/resolve/main/Qwen2.5-32B-Instruct-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/bartowski/Qwen2.5-32B-Instruct-GGUF/resolve/2116cbb385b8ce3a4d28cf3bf1cd2039a55821a6/Qwen2.5-32B-Instruct-Q4_K_M.gguf
     sha256: 2e5f6daea180dbc59f65a40641e94d3973b5dbaa32b3c0acf54647fa874e519e
     size_bytes: 19851336576
     min_vram_mb: 22528

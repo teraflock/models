@@ -27,7 +27,7 @@ payout_share: 0.65 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/c1869413dece09109e55b7dcc2c77ef382b0d0bd/Qwen3.8-27B-Q4_K_M.gguf
     sha256: d15d4b6de55f662ac40e867702d31afe738d032fa06b829b2b1a21a49d4a48ee
     size_bytes: 19403684480
     min_vram_mb: 21800
@@ -38,7 +38,7 @@ quants:
       rtx-4090: { min: 34, max: 52 }
       cpu-avx2: { min: 1, max: 3 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q8_0.gguf
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/c1869413dece09109e55b7dcc2c77ef382b0d0bd/Qwen3.8-27B-Q8_0.gguf
     sha256: 6bc9e7220d8400574fd62df25f04a961cb5cbb0d766cf0118c21c36c0059c35a
     size_bytes: 28595763840
     min_vram_mb: 32700

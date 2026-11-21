@@ -46,7 +46,7 @@ payout_share: 0.45 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/Clef-Flash-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/main/Clef-Flash-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/c3d925454595d792d5333da8b35f3c09911f7568/Clef-Flash-Q4_K_M.gguf
     sha256: eef2968c238a80d49d340430f22410ea3db9934ad1c6fdb233a503cbf9a9b54e
     size_bytes: 6732781824
     min_vram_mb: 7500
@@ -57,7 +57,7 @@ quants:
       rtx-3060: { min: 250, max: 650 }
       cpu-avx2: { min: 12, max: 32 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/main/Clef-Flash-Q8_0.gguf
+    artifact_url: https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/c3d925454595d792d5333da8b35f3c09911f7568/Clef-Flash-Q8_0.gguf
     sha256: 25f801e2a27610b0ccc0cb1558d7eda3d7a304e34e2c4a04e3079357ff7d906e
     size_bytes: 9657260288
     min_vram_mb: 11100

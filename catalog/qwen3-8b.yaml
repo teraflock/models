@@ -23,7 +23,7 @@ payout_share: 0.45 # share of the charge paid to the node
 source_repo: https://huggingface.co/unsloth/Qwen3-8B-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/a6adef130ffb23ddaf1a62fec9dced968c9bc482/Qwen3-8B-Q4_K_M.gguf
     sha256: 120307ba529eb2439d6c430d94104dabd578497bc7bfe7e322b5d9933b449bd4
     size_bytes: 5027784512
     min_vram_mb: 5900
@@ -34,7 +34,7 @@ quants:
       rtx-3060: { min: 40, max: 60 }
       cpu-avx2: { min: 5, max: 11 }
   - quant: Q5_K_M
-    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q5_K_M.gguf
+    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/a6adef130ffb23ddaf1a62fec9dced968c9bc482/Qwen3-8B-Q5_K_M.gguf
     sha256: 159c694b93271e4edc1dc2a305b10cf981032c8f3035a7da00973312f0331504
     size_bytes: 5851113280
     min_vram_mb: 6900
@@ -45,7 +45,7 @@ quants:
       rtx-3060: { min: 33, max: 50 }
       cpu-avx2: { min: 4, max: 9 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q8_0.gguf
+    artifact_url: https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/a6adef130ffb23ddaf1a62fec9dced968c9bc482/Qwen3-8B-Q8_0.gguf
     sha256: 0cfbf745760f07a76ddeb358dd025a27f2e11d1ca9c9a4169a373d52990fe86e
     size_bytes: 8709519168
     min_vram_mb: 10000

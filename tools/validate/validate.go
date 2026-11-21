@@ -531,7 +531,28 @@ func checkSingleFile(q Quant) []string {
 	if q.SHA256 != shaPlaceholder && !sha256RE.MatchString(q.SHA256) {
 		issues = append(issues, fmt.Sprintf("sha256 %q is neither 64 lowercase hex chars nor %q", q.SHA256, shaPlaceholder))
 	}
+	if msg := checkPinnedRev(q.ArtifactURL); msg != "" {
+		issues = append(issues, "artifact_url "+msg)
+	}
 	return issues
+}
+
+// commitRevRE is a full Hugging Face commit id.
+var commitRevRE = regexp.MustCompile(`^[0-9a-f]{40}$`)
+
+// checkPinnedRev returns a message when a Hugging Face download URL
+// follows a branch or tag instead of naming a commit. Publishers re-upload
+// a GGUF under the same name, and resolve/main then serves a file the
+// pinned sha256 no longer matches, so every fresh download fails
+// verification until someone re-pins. A commit URL keeps serving the file
+// that was hashed. URLs on other hosts are not judged here.
+func checkPinnedRev(raw string) string {
+	loc, ok := parseHFResolve(raw)
+	if !ok || commitRevRE.MatchString(loc.Rev) {
+		return ""
+	}
+	return fmt.Sprintf("%q follows the moving revision %q: name the 40-hex commit instead (the sha field of https://huggingface.co/api/models/%s/revision/%s), so an upstream re-upload cannot change the file under the pinned sha256",
+		raw, loc.Rev, loc.Repo, loc.Rev)
 }
 
 // checkParts validates a sharded quant: no single-file fields, every part
@@ -563,6 +584,9 @@ func checkParts(q Quant) []string {
 		}
 		if !strings.Contains(strings.ToLower(p.URL), strings.ToLower(q.Quant)) {
 			issues = append(issues, fmt.Sprintf("%s: url %q does not contain quant name %q", pfx, p.URL, q.Quant))
+		}
+		if msg := checkPinnedRev(p.URL); msg != "" {
+			issues = append(issues, fmt.Sprintf("%s: url %s", pfx, msg))
 		}
 		dir, base := splitURL(p.URL)
 		m := seriesRE.FindStringSubmatch(base)
@@ -610,6 +634,9 @@ func checkMmproj(p Part) []string {
 	}
 	if p.SizeBytes <= 0 {
 		issues = append(issues, "size_bytes must be positive")
+	}
+	if msg := checkPinnedRev(p.URL); msg != "" {
+		issues = append(issues, "url "+msg)
 	}
 	return issues
 }

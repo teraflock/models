@@ -37,7 +37,7 @@ payout_share: 0.40 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/Laya-GGUF
 quants:
   - quant: Q8_0
-    artifact_url: https://huggingface.co/ggml-org/Laya-GGUF/resolve/main/Laya-Q8_0.gguf
+    artifact_url: https://huggingface.co/ggml-org/Laya-GGUF/resolve/8d62fa9af5c4d00435ee8ceddff7a2d822c8bce5/Laya-Q8_0.gguf
     sha256: ac6a51fd7a7907bc9dd61e85f7e6b989f57a635e2232a8f0345f5c51ca6cb3ea
     size_bytes: 449397728
     min_vram_mb: 768
@@ -48,7 +48,7 @@ quants:
       rtx-3060: { min: 800, max: 1800 }
       cpu-avx2: { min: 120, max: 400 }
   - quant: BF16
-    artifact_url: https://huggingface.co/ggml-org/Laya-GGUF/resolve/main/Laya-BF16.gguf
+    artifact_url: https://huggingface.co/ggml-org/Laya-GGUF/resolve/8d62fa9af5c4d00435ee8ceddff7a2d822c8bce5/Laya-BF16.gguf
     sha256: 325a9a048e31e1d5ba6e7828e101207e486e90751c2462df6990845de2b8c1e1
     size_bytes: 844026880
     min_vram_mb: 1280

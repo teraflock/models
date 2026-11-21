@@ -29,7 +29,7 @@ payout_share: 0.65 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/52f9f9b8052fb9c8b69bba4a95eda0f319ac3d2a/Qwen3.6-35B-A3B-Q4_K_M.gguf
     sha256: f4ffe03c9139e6a905a5d346f77d9fabdd179367c3280dfd005d1e75ca5ed8c8
     size_bytes: 20542732576
     min_vram_mb: 23400
@@ -40,7 +40,7 @@ quants:
       rtx-4090: { min: 105, max: 160 }
       cpu-avx2: { min: 6, max: 13 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-Q8_0.gguf
+    artifact_url: https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF/resolve/52f9f9b8052fb9c8b69bba4a95eda0f319ac3d2a/Qwen3.6-35B-A3B-Q8_0.gguf
     sha256: f189cedbe18dc524dd74014b23431081262bc9fcc57c18fec7a7a25149246570
     size_bytes: 36903139616
     min_vram_mb: 42200

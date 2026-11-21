@@ -30,7 +30,7 @@ payout_share: 0.72 # share of the charge paid to the node
 source_repo: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF
 quants:
   - quant: IQ4_XS
-    artifact_url: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF/resolve/main/Qwen3-Next-80B-A3B-Instruct-IQ4_XS.gguf
+    artifact_url: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF/resolve/6688872b7a4e5eb8a121ceea08009530a024ba1d/Qwen3-Next-80B-A3B-Instruct-IQ4_XS.gguf
     sha256: 706c5575670d053829fda267691c667e9859e5f7668703afedb2dbe53d0a7374
     size_bytes: 42644478752
     min_vram_mb: 48900
@@ -40,7 +40,7 @@ quants:
       m3-ultra: { min: 22, max: 40 }
       cpu-avx2: { min: 1, max: 3 }
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF/resolve/main/Qwen3-Next-80B-A3B-Instruct-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF/resolve/6688872b7a4e5eb8a121ceea08009530a024ba1d/Qwen3-Next-80B-A3B-Instruct-Q4_K_M.gguf
     sha256: f73551b55e3796526c37772c96227151fa11af328802b8f9865d635104e280fd
     size_bytes: 48506100512
     min_vram_mb: 55600

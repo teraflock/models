@@ -14,7 +14,7 @@ import (
 // not look like a verified pin (CLAUDE.md rule 3).
 func fakeSHA(b byte) string { return strings.Repeat(fmt.Sprintf("%02x", b), 32) }
 
-const partsBase = "https://huggingface.co/x/Big-GGUF/resolve/main/Big-Q4_K_M"
+const partsBase = "https://huggingface.co/x/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Big-Q4_K_M"
 
 // validParts is a well-formed 3-part quant.
 func validParts() Quant {
@@ -89,7 +89,7 @@ func TestPartsSeriesShape(t *testing.T) {
 	q.Parts[1].URL = partsBase + "/Other-Q4_K_M-00002-of-00003.gguf"
 	assertIssue(t, CheckQuant(q), "basename prefix")
 	q = validParts()
-	q.Parts[1].URL = "https://huggingface.co/y/Big-GGUF/resolve/main/Big-Q4_K_M/Big-Q4_K_M-00002-of-00003.gguf"
+	q.Parts[1].URL = "https://huggingface.co/y/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Big-Q4_K_M/Big-Q4_K_M-00002-of-00003.gguf"
 	assertIssue(t, CheckQuant(q), "not in the same directory")
 	q = validParts()
 	q.Parts[1].URL = partsBase + "/Big-Q4_K_M-00002-of-00004.gguf"
@@ -98,9 +98,9 @@ func TestPartsSeriesShape(t *testing.T) {
 	// Each part must name the quant, like artifact_url does.
 	q = validParts()
 	for i := range q.Parts {
-		q.Parts[i].URL = fmt.Sprintf("https://huggingface.co/x/Big-GGUF/resolve/main/Big-Q8_0-%05d-of-00003.gguf", i+1)
+		q.Parts[i].URL = fmt.Sprintf("https://huggingface.co/x/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Big-Q8_0-%05d-of-00003.gguf", i+1)
 	}
-	assertIssue(t, CheckQuant(q), "parts[0]: url \"https://huggingface.co/x/Big-GGUF/resolve/main/Big-Q8_0-00001-of-00003.gguf\" does not contain quant name")
+	assertIssue(t, CheckQuant(q), "parts[0]: url \"https://huggingface.co/x/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Big-Q8_0-00001-of-00003.gguf\" does not contain quant name")
 
 	// Bad per-part sha shape.
 	q = validParts()
@@ -115,7 +115,7 @@ func TestShardOneAloneInArtifactURLRejected(t *testing.T) {
 }
 
 func TestMmprojShape(t *testing.T) {
-	good := &Part{URL: "https://huggingface.co/x/Big-GGUF/resolve/main/mmproj-F16.gguf", SHA256: fakeSHA(0xd4), SizeBytes: 800_000_000}
+	good := &Part{URL: "https://huggingface.co/x/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/mmproj-F16.gguf", SHA256: fakeSHA(0xd4), SizeBytes: 800_000_000}
 	q := validQuant()
 	q.Mmproj = good
 	if issues := CheckQuant(q); len(issues) != 0 {
@@ -128,7 +128,7 @@ func TestMmprojShape(t *testing.T) {
 	}
 
 	q = validQuant()
-	q.Mmproj = &Part{URL: "https://huggingface.co/x/Big-GGUF/resolve/main/Big-Q4_K_M.gguf", SHA256: fakeSHA(0xd4), SizeBytes: 1}
+	q.Mmproj = &Part{URL: "https://huggingface.co/x/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Big-Q4_K_M.gguf", SHA256: fakeSHA(0xd4), SizeBytes: 1}
 	assertIssue(t, CheckQuant(q), "mmproj: url basename")
 	q.Mmproj = &Part{URL: good.URL, SHA256: "nope", SizeBytes: 1}
 	assertIssue(t, CheckQuant(q), "mmproj: sha256")
@@ -220,7 +220,7 @@ quants:
         sha256: %s
         size_bytes: 920739232
     mmproj:
-      url: https://huggingface.co/x/Big-GGUF/resolve/main/mmproj-F16.gguf
+      url: https://huggingface.co/x/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/mmproj-F16.gguf
       sha256: %s
       size_bytes: 800000000
     size_bytes: 4920739232
@@ -308,4 +308,35 @@ func TestSchemaRejectsMixedAndShardOne(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertIssue(t, issues, "is one shard of a sharded GGUF")
+}
+
+// A Hugging Face download URL has to name a commit: resolve/main serves
+// whatever the publisher uploaded last, which is how pinned hashes went
+// stale three times in a month.
+func TestDownloadURLMustNameACommit(t *testing.T) {
+	const want = `follows the moving revision "main"`
+
+	q := validParts()
+	q.Parts[1].URL = strings.Replace(q.Parts[1].URL, "0123456789abcdef0123456789abcdef01234567", "main", 1)
+	assertIssue(t, CheckQuant(q), "parts[1]: url")
+	assertIssue(t, CheckQuant(q), want)
+
+	q = validParts()
+	q.Mmproj = &Part{URL: "https://huggingface.co/x/Big-GGUF/resolve/main/mmproj-F16.gguf", SHA256: fakeSHA(0xd4), SizeBytes: 800_000_000}
+	assertIssue(t, CheckQuant(q), "mmproj: url")
+	assertIssue(t, CheckQuant(q), want)
+
+	for raw, pinned := range map[string]bool{
+		"https://huggingface.co/x/Big-GGUF/resolve/main/Big-Q4_K_M.gguf":                                     false,
+		"https://huggingface.co/x/Big-GGUF/resolve/v1.0/Big-Q4_K_M.gguf":                                     false, // a tag can be moved too
+		"https://huggingface.co/x/Big-GGUF/resolve/0123456/Big-Q4_K_M.gguf":                                  false, // abbreviated commit
+		"https://huggingface.co/x/Big-GGUF/resolve/0123456789ABCDEF0123456789abcdef01234567/Big-Q4_K_M.gguf": false,
+		"https://huggingface.co/x/Big-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Big-Q4_K_M.gguf": true,
+		"https://example.com/models/Big-Q4_K_M.gguf":                                                         true, // other hosts are not judged
+		"file:///models/Big-Q4_K_M.gguf":                                                                     true,
+	} {
+		if msg := checkPinnedRev(raw); (msg == "") != pinned {
+			t.Errorf("%s: pinned=%v, got message %q", raw, pinned, msg)
+		}
+	}
 }

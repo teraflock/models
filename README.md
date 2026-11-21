@@ -236,6 +236,18 @@ manifest, printing each mismatch:
 cd tools/validate && go run . -root ../.. -verify-remote   # needs the network; HF_TOKEN optional
 ```
 
+Download URLs name a commit, not a branch:
+`https://huggingface.co/<repo>/resolve/<40-hex commit>/<file>`. A
+`resolve/main` URL serves whatever was uploaded last, so each re-upload
+broke every fresh download until someone re-pinned (2026-10-19, 11-08 and
+11-12). A commit URL keeps serving the file that was hashed, and the
+validator rejects a Hugging Face URL on a branch, a tag or an abbreviated
+commit. The catalog therefore stays on a file until someone moves it on
+purpose: to take a newer upload, change the commit, `sha256` and
+`size_bytes` together from the tree API at that commit, and load the new
+file on the pinned runtime build before tagging (re-uploads have changed
+metadata and chat templates).
+
 Exit 1 is confirmed drift (re-pin the listed entries from the tree API
 output, never by hand); exit 2 means the check could not complete, which
 is "unverified", not a pass. It runs in two places and deliberately not a
@@ -287,11 +299,15 @@ what is servable; `TERAFLOCK_CATALOG_REF` overrides that deliberately
 ## Adding a model
 
 1. Create `catalog/<model-id>.yaml` (copy a neighbor of the same class).
-2. Pull real `sha256`/`size_bytes` from the artifact host (for Hugging Face:
-   `https://huggingface.co/api/models/<repo>/tree/main` exposes the LFS
-   sha256), or mark them `TODO-verify` — CI accepts the placeholder on
-   branches and main (the quant is left out of the staging object);
-   `promote.yml` refuses to write the stable object while any remain.
+2. Pull real `sha256`/`size_bytes` from the artifact host, or mark them
+   `TODO-verify`. For Hugging Face, take the commit first
+   (`https://huggingface.co/api/models/<repo>/revision/main`, field `sha`),
+   write it into the URL (`.../resolve/<commit>/<file>`), and read the LFS
+   sha256 from the tree at that same commit
+   (`https://huggingface.co/api/models/<repo>/tree/<commit>`). CI accepts
+   the `TODO-verify` placeholder on branches and main (the quant is left
+   out of the staging object); `promote.yml` refuses to write the stable
+   object while any remain.
    `go run . -root ../.. -verify-remote` (from `tools/validate`) confirms
    what you pasted against the same API.
 3. Pick the §7 `payout_class` and copy its exact row — `price_in_per_mtok`,
@@ -331,7 +347,7 @@ Sharded releases (`<name>-00001-of-0000N.gguf` ...) use `parts` instead of
 ```yaml
   - quant: Q4_K_M
     parts:
-      - url: https://huggingface.co/<repo>/resolve/main/<name>-Q4_K_M/<name>-Q4_K_M-00001-of-00003.gguf
+      - url: https://huggingface.co/<repo>/resolve/<commit>/<name>-Q4_K_M/<name>-Q4_K_M-00001-of-00003.gguf
         sha256: <lfs.oid of that file>
         size_bytes: <lfs.size>
       - url: .../<name>-Q4_K_M-00002-of-00003.gguf
@@ -339,7 +355,7 @@ Sharded releases (`<name>-00001-of-0000N.gguf` ...) use `parts` instead of
       - url: .../<name>-Q4_K_M-00003-of-00003.gguf
         ...
     mmproj:            # optional vision projector, only for VL releases
-      url: https://huggingface.co/<repo>/resolve/main/mmproj-F16.gguf
+      url: https://huggingface.co/<repo>/resolve/<commit>/mmproj-F16.gguf
       sha256: <lfs.oid>
       size_bytes: <lfs.size>
     size_bytes: <sum of the parts, mmproj excluded>
@@ -352,8 +368,8 @@ sha256 or `TODO-verify`; listing shard 1 alone under `artifact_url` is
 rejected. `min_vram_mb`/`min_ram_mb` sanity uses the summed size.
 
 Where the hashes come from: shards usually live in a subdirectory, so query
-`https://huggingface.co/api/models/<repo>/tree/main/<subdir>` (or
-`tree/main?recursive=true`); each LFS entry carries `lfs.oid` (the SHA-256
+`https://huggingface.co/api/models/<repo>/tree/<commit>/<subdir>` (or
+`tree/<commit>?recursive=true`), at the same commit the URLs name; each LFS entry carries `lfs.oid` (the SHA-256
 to copy) and `lfs.size`. Xet-backed repos also show an `xetHash` — that is
 **not** a SHA-256; copy `lfs.oid`. Never paste a hash you did not read from
 the host.

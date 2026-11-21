@@ -22,7 +22,7 @@ payout_share: 0.45 # share of the charge paid to the node
 source_repo: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/8911e8a47f92bac19d6f5c64a2e2095bd2f7d031/Qwen2.5-7B-Instruct-Q4_K_M.gguf
     sha256: 65b8fcd92af6b4fefa935c625d1ac27ea29dcb6ee14589c55a8f115ceaaa1423
     size_bytes: 4683074240
     min_vram_mb: 5600
@@ -33,7 +33,7 @@ quants:
       rtx-3060: { min: 42, max: 65 }
       cpu-avx2: { min: 5, max: 12 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q8_0.gguf
+    artifact_url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/8911e8a47f92bac19d6f5c64a2e2095bd2f7d031/Qwen2.5-7B-Instruct-Q8_0.gguf
     sha256: 9c6a6e61664446321d9c0dd7ee28a0d03914277609e21bc0e1fce4abe780ce1b
     size_bytes: 8098525888
     min_vram_mb: 9400

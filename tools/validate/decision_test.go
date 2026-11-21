@@ -91,7 +91,7 @@ func TestSmallClassIncludesNineB(t *testing.T) {
 func TestBF16IsACanonicalQuantName(t *testing.T) {
 	q := validQuant()
 	q.Quant = "BF16"
-	q.ArtifactURL = "https://huggingface.co/ggml-org/Laya-GGUF/resolve/main/Laya-BF16.gguf"
+	q.ArtifactURL = "https://huggingface.co/ggml-org/Laya-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Laya-BF16.gguf"
 	if issues := CheckQuant(q); len(issues) != 0 {
 		t.Fatalf("unexpected issues: %v", issues)
 	}
@@ -284,7 +284,7 @@ payout_share: 0.40
 source_repo: https://huggingface.co/x/Tiny-GGUF
 quants:
   - quant: BF16
-    artifact_url: https://huggingface.co/x/Tiny-GGUF/resolve/main/Tiny-BF16.gguf
+    artifact_url: https://huggingface.co/x/Tiny-GGUF/resolve/0123456789abcdef0123456789abcdef01234567/Tiny-BF16.gguf
     sha256: ` + fakeSHA(0x5d) + `
     size_bytes: 844026720
     min_vram_mb: 1280

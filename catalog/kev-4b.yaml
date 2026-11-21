@@ -39,7 +39,7 @@ payout_share: 0.45 # share of the charge paid to the node
 source_repo: https://huggingface.co/ggml-org/Kev-4B-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/main/Kev-4B-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/f4624b6bb7072f1bab726a622c1cad3f96030b9e/Kev-4B-Q4_K_M.gguf
     sha256: 33ae6b18926502b2209a1bf7d3b61a350d65938441515c686bb87d226a19eff9
     size_bytes: 3033489824
     min_vram_mb: 3500
@@ -50,7 +50,7 @@ quants:
       rtx-3060: { min: 500, max: 1300 }
       cpu-avx2: { min: 25, max: 70 }
   - quant: Q8_0
-    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/main/Kev-4B-Q8_0.gguf
+    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/f4624b6bb7072f1bab726a622c1cad3f96030b9e/Kev-4B-Q8_0.gguf
     sha256: 7c2ebed90560522c2801389db482ac1dc4c36d828f201f6074c1d60e433948da
     size_bytes: 4483801504
     min_vram_mb: 5200
@@ -61,7 +61,7 @@ quants:
       rtx-3060: { min: 450, max: 1100 }
       cpu-avx2: { min: 18, max: 50 }
   - quant: BF16
-    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/main/Kev-4B-BF16.gguf
+    artifact_url: https://huggingface.co/ggml-org/Kev-4B-GGUF/resolve/f4624b6bb7072f1bab726a622c1cad3f96030b9e/Kev-4B-BF16.gguf
     sha256: c690ee43d8244f7cd7dd960aebaadda3666e68bd69aba1af9135737b4f0595d9
     size_bytes: 8427020704
     min_vram_mb: 9700

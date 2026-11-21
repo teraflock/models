@@ -22,7 +22,7 @@ payout_share: 0.65 # share of the charge paid to the node
 source_repo: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF
 quants:
   - quant: Q4_K_M
-    artifact_url: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF/resolve/main/Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf
+    artifact_url: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF/resolve/62a613c92d5a5f73bba6d348b51433b232c4640c/Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf
     sha256: d1a6d049f09730c3f8ba26cf6b0b60c89790b5fdafa9a59c819acdfe93fffd1b
     size_bytes: 14333908672
     min_vram_mb: 16384
@@ -33,7 +33,7 @@ quants:
       rtx-4090: { min: 40, max: 60 }
       cpu-avx2: { min: 1.5, max: 3.5 }
   - quant: Q5_K_M
-    artifact_url: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF/resolve/main/Mistral-Small-24B-Instruct-2501-Q5_K_M.gguf
+    artifact_url: https://huggingface.co/bartowski/Mistral-Small-24B-Instruct-2501-GGUF/resolve/62a613c92d5a5f73bba6d348b51433b232c4640c/Mistral-Small-24B-Instruct-2501-Q5_K_M.gguf
     sha256: a9470aae6112f3dee88d7d2a4469c315696f09ce6d95b6de503cdc546b9713b4
     size_bytes: 16763983552
     min_vram_mb: 19456

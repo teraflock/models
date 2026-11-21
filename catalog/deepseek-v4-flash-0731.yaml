@@ -34,19 +34,19 @@ source_repo: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF
 quants:
   - quant: UD-Q4_K_XL
     parts:
-      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00001-of-00005.gguf
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/fbbb5b93fb787c21338159b0af3318bb3f4d9768/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00001-of-00005.gguf
         sha256: d13ce8f90855547bdaebe7312f531a1f2c4f822178d3103951f27fe884395cfa
         size_bytes: 5257408
-      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00002-of-00005.gguf
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/fbbb5b93fb787c21338159b0af3318bb3f4d9768/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00002-of-00005.gguf
         sha256: d5b61668950f4743aacd677675d7fcf7507dbe1db6d304e8ff97ed1f00827bee
         size_bytes: 48935523072
-      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00003-of-00005.gguf
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/fbbb5b93fb787c21338159b0af3318bb3f4d9768/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00003-of-00005.gguf
         sha256: 9705db7e589f360685ca7bd48100b270d78d228d4f5aa980508f3b2778af5494
         size_bytes: 48980787136
-      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00004-of-00005.gguf
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/fbbb5b93fb787c21338159b0af3318bb3f4d9768/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00004-of-00005.gguf
         sha256: 7f13a68e3ca64208454c4ba32cc2757c0cbe78e3e5576c3142bf7007ca97da42
         size_bytes: 49999168416
-      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/main/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00005-of-00005.gguf
+      - url: https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF/resolve/fbbb5b93fb787c21338159b0af3318bb3f4d9768/UD-Q4_K_XL/DeepSeek-V4-Flash-0731-UD-Q4_K_XL-00005-of-00005.gguf
         sha256: ed0d93164d3784968d6ce40d6d201ba98337f16e7db1b31fe495b2b0f334cc09
         size_bytes: 7174505088
     size_bytes: 155095241120 # sum of the parts
